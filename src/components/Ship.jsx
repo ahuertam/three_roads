@@ -6,7 +6,7 @@ import useGameStore from '../store/gameStore';
 function Ship() {
   const shipRef = useRef();
   const { camera } = useThree();
-  const { shipPosition, setShipPosition } = useGameStore();
+  const { shipPosition, setShipPosition, onPlatform, platformHeight } = useGameStore();
   
   const keys = useRef({
     left: false,
@@ -20,7 +20,7 @@ function Ship() {
   const isGrounded = useRef(true);
   const baseSpeed = useRef(5);
   const bounceVelocity = useRef(0);
-  const bounceCount = useRef(0); // Contador de rebotes
+  const bounceCount = useRef(0);
   
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -89,10 +89,10 @@ function Ship() {
     const jumpForce = 12;
     const gravity = -25;
     const friction = 0.85;
-    const bounceForce = 6; // Reducido
-    const bounceDamping = 0.5; // Más amortiguación
+    const bounceForce = 6;
+    const bounceDamping = 0.5;
     const groundLevel = 0.5;
-    const maxBounces = 2; // Máximo 2 rebotes
+    const maxBounces = 2;
     
     // Movimiento lateral
     if (keys.current.left) {
@@ -115,32 +115,46 @@ function Ship() {
     velocity.current.z = -baseSpeed.current;
     
     // Salto
-    if (keys.current.jump && isGrounded.current) {
+    const canJump = isGrounded.current || onPlatform;
+    if (keys.current.jump && canJump) {
       velocity.current.y = jumpForce;
       isGrounded.current = false;
-      bounceCount.current = 0; // Resetear contador al saltar
+      bounceCount.current = 0;
     }
     
-    // Aplicar gravedad
-    velocity.current.y += gravity * delta;
+    // Gravedad - solo si no está en una plataforma
+    if (!onPlatform) {
+      velocity.current.y += gravity * delta;
+    } else {
+      // Si está en una plataforma, detener caída
+      if (velocity.current.y < 0) {
+        velocity.current.y = 0;
+      }
+    }
     
     // Aplicar efecto rebote (limitado)
     if (bounceVelocity.current > 0 && bounceCount.current < maxBounces) {
       velocity.current.y += bounceVelocity.current;
       bounceVelocity.current *= bounceDamping;
-      if (bounceVelocity.current < 0.5) { // Umbral más alto para parar rebotes
+      if (bounceVelocity.current < 0.5) {
         bounceVelocity.current = 0;
       }
     } else {
-      bounceVelocity.current = 0; // Forzar parada si excede rebotes
+      bounceVelocity.current = 0;
     }
     
     // Actualizar posición
-    const newPosition = [
+    let newPosition = [
       shipPosition[0] + velocity.current.x * delta,
       shipPosition[1] + velocity.current.y * delta,
       shipPosition[2] + velocity.current.z * delta
     ];
+    
+    // Si está en una plataforma, usar la altura de la plataforma
+    if (onPlatform && platformHeight > 0) {
+      newPosition[1] = Math.max(newPosition[1], platformHeight);
+      isGrounded.current = true;
+    }
     
     // Verificar colisión con el suelo
     if (newPosition[1] <= groundLevel) {
@@ -148,7 +162,7 @@ function Ship() {
       
       // Efecto rebote limitado
       if (velocity.current.y < -8 && bounceCount.current < maxBounces) {
-        bounceVelocity.current = Math.abs(velocity.current.y) * 0.2; // Rebote más suave
+        bounceVelocity.current = Math.abs(velocity.current.y) * 0.2;
         bounceCount.current++;
       } else {
         bounceVelocity.current = 0;
@@ -156,7 +170,7 @@ function Ship() {
       
       velocity.current.y = 0;
       isGrounded.current = true;
-    } else {
+    } else if (!onPlatform) {
       isGrounded.current = false;
     }
     
@@ -175,31 +189,31 @@ function Ship() {
   
   return (
     <mesh ref={shipRef} position={shipPosition} castShadow>
-      {/* Cuerpo principal del landspeeder */}
+      {/* Cuerpo principal del landspeeder - Azul como SkyRoads */}
       <Box args={[3, 0.8, 6]}>
-        <meshStandardMaterial color="#c0c0c0" metalness={0.8} roughness={0.2} />
+        <meshStandardMaterial color="#4488ff" metalness={0.6} roughness={0.3} />
       </Box>
       
-      {/* Motores laterales */}
+      {/* Motores laterales - Azul más oscuro */}
       <mesh position={[-2, -0.5, -1]} castShadow>
         <Box args={[0.8, 1.2, 3]}>
-          <meshStandardMaterial color="#404040" metalness={0.6} roughness={0.3} />
+          <meshStandardMaterial color="#2266cc" metalness={0.7} roughness={0.2} />
         </Box>
       </mesh>
       <mesh position={[2, -0.5, -1]} castShadow>
         <Box args={[0.8, 1.2, 3]}>
-          <meshStandardMaterial color="#404040" metalness={0.6} roughness={0.3} />
+          <meshStandardMaterial color="#2266cc" metalness={0.7} roughness={0.2} />
         </Box>
       </mesh>
       
-      {/* Cabina */}
+      {/* Cabina - Azul muy oscuro */}
       <mesh position={[0, 0.6, 1]} castShadow>
         <Box args={[2, 1, 2]}>
-          <meshStandardMaterial color="#1a1a1a" metalness={0.9} roughness={0.1} transparent opacity={0.7} />
+          <meshStandardMaterial color="#1144aa" metalness={0.8} roughness={0.1} transparent opacity={0.9} />
         </Box>
       </mesh>
       
-      {/* Efectos de propulsión */}
+      {/* Efectos de propulsión - Cyan brillante */}
       <mesh position={[-2, -1, -3]} castShadow>
         <Box args={[0.3, 0.3, 1]}>
           <meshStandardMaterial color="#00ffff" emissive="#0088ff" emissiveIntensity={0.5} />

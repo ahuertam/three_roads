@@ -5,6 +5,7 @@ import useGameStore from '../store/gameStore';
 import React from 'react';
 import Ship from './Ship';
 import Track from './Track';
+import Obstacles from './Obstacles';
 
 function Game() {
   const trackRef = useRef();
@@ -14,6 +15,7 @@ function Game() {
     lives,
     level,
     speed,
+    gameTime,
     startGame,
     resetToMenu
   } = useGameStore();
@@ -90,6 +92,7 @@ function Game() {
             <div style={{ marginBottom: '5px' }}>❤️ Vidas: {lives}</div>
             <div style={{ marginBottom: '5px' }}>🏁 Nivel: {level}</div>
             <div style={{ marginBottom: '5px' }}>⚡ Velocidad: {(speed * 100).toFixed(0)}%</div>
+            <div style={{ marginBottom: '5px' }}>⏱️ Tiempo: {gameTime.toFixed(1)}s</div>
           </div>
         </Html>
       );
@@ -114,6 +117,7 @@ function Game() {
         {/* Componentes del juego */}
         <Track ref={trackRef} />
         <Ship trackRef={trackRef} />
+        <Obstacles />
       </>
       
       <GameUI />
