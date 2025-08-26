@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { GameManager } from '../ecs/GameManager.js';
 import useGameStore from '../store/gameStore.js';
+import { GameManager } from '../ecs/GameManager.js';
 
 export function useECS() {
   const gameManager = useRef(null);
@@ -25,8 +25,8 @@ export function useECS() {
   });
   
   return {
-    gameManager: gameManager.current,
     shipEntity: gameManager.current?.getShipEntity(),
-    obstacleEntities: gameManager.current?.getObstacleEntities() || []
+    obstacleEntities: gameManager.current?.getObstacleEntities() || [],
+    particleEntities: gameManager.current?.getParticleEntities() || []
   };
 }

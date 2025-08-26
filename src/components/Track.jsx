@@ -21,8 +21,6 @@ function Track() {
       // Si la nave ha pasado la mitad del primer plano (Z < -100)
       // Nota: Como va hacia Z negativo, comparamos con menor que
       if (shipZ < currentSegments[0].position[2] - 100) {
-        console.log(`Nave en Z: ${shipZ.toFixed(1)} - Cambiando planos`);
-        
         // El segundo plano se convierte en el primero
         const newCurrentPlane = currentSegments[1];
         
@@ -34,9 +32,6 @@ function Track() {
         };
         
         nextId.current++;
-        
-        console.log(`Nuevo plano actual: ID ${newCurrentPlane.id}, Z: ${newCurrentPlane.position[2]}`);
-        console.log(`Nuevo plano siguiente: ID ${newNextPlane.id}, Z: ${newNextPlane.position[2]}`);
         
         return [newCurrentPlane, newNextPlane];
       }

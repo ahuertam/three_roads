@@ -2,16 +2,23 @@ import { Transform } from '../components/Transform.js';
 import { Collision } from '../components/Collision.js';
 import { Platform } from '../components/Platform.js';
 import { Physics } from '../components/Physics.js';
+import useGameStore from '../../store/gameStore.js';
 
 export class CollisionSystem {
-  constructor(ecsManager, gameStore) {
+  constructor(ecsManager, gameStore, particleSystem = null) {
     this.ecsManager = ecsManager;
-    this.gameStore = gameStore;
-    this.hoverHeight = 0.8; // Altura de flotación sobre plataformas
-    this.platformDetectionRange = 1.5; // Rango para detectar plataformas
+    this.particleSystem = particleSystem;
+    this.hoverHeight = 0.8;
+    this.platformDetectionRange = 1.5;
   }
   
   update() {
+    // Obtener el estado actual del store directamente
+    const { gameState } = useGameStore.getState();
+    
+    // Solo procesar colisiones si el juego está en estado 'playing'
+    if (gameState !== 'playing') return;
+    
     const shipEntities = this.ecsManager.getEntitiesWithTag('player');
     const obstacleEntities = this.ecsManager.getEntitiesWithTag('obstacle');
     
@@ -25,7 +32,6 @@ export class CollisionSystem {
       let platformHeight = 0;
       let nearestPlatformDistance = Infinity;
       
-      // Filtrar obstáculos cercanos
       const nearbyObstacles = obstacleEntities.filter(obstacle => {
         const obstacleTransform = obstacle.getComponent(Transform);
         return Math.abs(obstacleTransform.position[2] - shipTransform.position[2]) < 12;
@@ -43,7 +49,6 @@ export class CollisionSystem {
         if (isHorizontallyOver) {
           const distanceToTop = shipTransform.position[1] - obstacleBox.maxY;
           
-          // Verificar si está cerca de una plataforma (flotación suave)
           if (distanceToTop >= -this.hoverHeight && distanceToTop <= this.platformDetectionRange) {
             const platformDistance = Math.abs(distanceToTop);
             if (platformDistance < nearestPlatformDistance) {
@@ -53,16 +58,22 @@ export class CollisionSystem {
             }
           }
           
-          // Verificar colisión frontal/lateral (más estricta)
+          // Verificar colisión frontal/lateral
           const intersects = this.checkFullIntersection(shipBox, obstacleBox);
           if (intersects && distanceToTop < -this.hoverHeight) {
-            this.gameStore.handleCollision();
+            this.handleCrash(shipTransform.position);
             return;
           }
         }
+        
+        // Verificar colisión lateral específica
+        if (this.checkLateralCollision(shipBox, obstacleBox)) {
+          this.handleCrash(shipTransform.position);
+          return;
+        }
       }
       
-      // Actualizar estado de plataforma con transición suave
+      // Actualizar estado de plataforma
       if (shipPlatform) {
         const wasOnPlatform = shipPlatform.isOnPlatform;
         shipPlatform.isOnPlatform = onPlatform;
@@ -71,26 +82,44 @@ export class CollisionSystem {
           const targetHeight = platformHeight + this.hoverHeight;
           const currentHeight = shipTransform.position[1];
           
-          // Transición suave hacia la altura de flotación
           if (Math.abs(currentHeight - targetHeight) > 0.1) {
-            const lerpFactor = wasOnPlatform ? 0.15 : 0.08; // Más rápido si ya estaba en plataforma
+            const lerpFactor = wasOnPlatform ? 0.15 : 0.08;
             shipTransform.position[1] = this.lerp(currentHeight, targetHeight, lerpFactor);
           } else {
             shipTransform.position[1] = targetHeight;
           }
           
-          // Amortiguar velocidad vertical cuando está sobre plataforma
           if (shipPhysics && shipPhysics.velocity.y < 0) {
             shipPhysics.velocity.y *= 0.3;
           }
         } else if (wasOnPlatform && !onPlatform) {
-          // Impulso adicional al salir de la plataforma
           if (shipPhysics && shipPhysics.velocity.y > 0) {
-            shipPhysics.velocity.y *= 1.2; // Boost al saltar desde plataforma
+            shipPhysics.velocity.y *= 1.2;
           }
         }
       }
     });
+  }
+  
+  handleCrash(position) {
+    // Crear explosión de partículas
+    if (this.particleSystem) {
+      this.particleSystem.createExplosion(position, 30);
+    }
+    
+    // Obtener el estado y acciones del store directamente
+    const { handleCollision } = useGameStore.getState();
+    
+    // Manejar colisión en el store
+    handleCollision(position);
+  }
+  
+  checkLateralCollision(shipBox, obstacleBox) {
+    const lateralOverlap = !(shipBox.maxX < obstacleBox.minX || shipBox.minX > obstacleBox.maxX);
+    const verticalOverlap = !(shipBox.maxY < obstacleBox.minY || shipBox.minY > obstacleBox.maxY);
+    const depthOverlap = !(shipBox.maxZ < obstacleBox.minZ || shipBox.minZ > obstacleBox.maxZ);
+    
+    return lateralOverlap && verticalOverlap && depthOverlap;
   }
   
   lerp(start, end, factor) {

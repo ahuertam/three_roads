@@ -3,6 +3,7 @@ import { InputSystem } from './systems/InputSystem.js';
 import { MovementSystem } from './systems/MovementSystem.js';
 import { CollisionSystem } from './systems/CollisionSystem.js';
 import { ObstacleSpawnSystem } from './systems/ObstacleSpawnSystem.js';
+import { ParticleSystem } from './systems/ParticleSystem.js';
 import { EntityFactory } from './entities/EntityFactory.js';
 
 export class GameManager {
@@ -17,15 +18,19 @@ export class GameManager {
   }
   
   initializeSystems() {
-    // Orden importante: Input -> Movement -> Collision -> Spawn
+    // Crear sistema de partículas primero
+    this.particleSystem = new ParticleSystem(this.ecsManager);
+    
+    // Orden importante: Input -> Movement -> Collision -> Particles -> Spawn
     this.inputSystem = new InputSystem(this.ecsManager);
     this.movementSystem = new MovementSystem(this.ecsManager);
-    this.collisionSystem = new CollisionSystem(this.ecsManager, this.gameStore);
+    this.collisionSystem = new CollisionSystem(this.ecsManager, this.gameStore, this.particleSystem);
     this.obstacleSpawnSystem = new ObstacleSpawnSystem(this.ecsManager, this.gameStore);
     
     this.ecsManager.addSystem(this.inputSystem);
     this.ecsManager.addSystem(this.movementSystem);
     this.ecsManager.addSystem(this.collisionSystem);
+    this.ecsManager.addSystem(this.particleSystem);
     this.ecsManager.addSystem(this.obstacleSpawnSystem);
   }
   
@@ -39,7 +44,6 @@ export class GameManager {
     this.gameStore.updateGameTime(delta);
     this.ecsManager.update(delta);
     
-    // Sincronizar posición de la nave con el store
     if (this.shipEntity) {
       const transform = this.shipEntity.getComponent('Transform');
       if (transform) {
@@ -57,11 +61,9 @@ export class GameManager {
   }
   
   restart() {
-    // Limpiar todas las entidades
     this.ecsManager.entities.clear();
     this.ecsManager.components.clear();
     
-    // Recrear entidades
     this.initializeEntities();
     this.start();
   }
@@ -72,6 +74,10 @@ export class GameManager {
   
   getObstacleEntities() {
     return this.ecsManager.getEntitiesWithTag('obstacle');
+  }
+  
+  getParticleEntities() {
+    return this.ecsManager.getEntitiesWithTag('particle');
   }
   
   destroy() {

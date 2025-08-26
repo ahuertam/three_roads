@@ -7,10 +7,12 @@ import { OrbitControls } from '@react-three/drei';
 import Ship from './Ship';
 import Obstacles from './Obstacles';
 import Track from './Track';
+import Particles from './Particles';
+// Remover: import CrashMessage from './CrashMessage';
 import { useECS } from '../hooks/useECS';
 
 function Game() {
-  const { shipEntity, obstacleEntities } = useECS();
+  const { shipEntity, obstacleEntities, particleEntities } = useECS();
   
   return (
     <>
@@ -26,8 +28,8 @@ function Game() {
       <Track />
       <Ship ecsEntity={shipEntity} />
       <Obstacles ecsEntities={obstacleEntities} />
-      
-      {/* <OrbitControls enablePan={false} enableZoom={false} enableRotate={false} /> */}
+      <Particles ecsEntities={particleEntities} />
+      {/* Remover: <CrashMessage /> */}
     </>
   );
 }
