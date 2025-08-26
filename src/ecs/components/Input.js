@@ -8,7 +8,7 @@ export class Input {
       jump: false
     };
     this.lateralSpeed = 12;
-    this.accelerationSpeed = 15;
+    this.accelerationSpeed = 25; // Aumentado de 15 a 25
     this.jumpForce = 12;
   }
 }
