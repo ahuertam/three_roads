@@ -8,7 +8,7 @@ export class Input {
       jump: false
     };
     this.lateralSpeed = 12;
-    this.accelerationSpeed = 25; // Aumentado de 15 a 25
-    this.jumpForce = 12;
+    this.accelerationSpeed = 25;
+    this.jumpForce = 18; // Aumentado de 12 a 18 para saltos más altos
   }
 }

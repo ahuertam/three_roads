@@ -39,9 +39,11 @@ export class CollisionSystem {
       let platformHeight = 0;
       let nearestPlatformDistance = Infinity;
       
+      // MEJORAR FILTRO DE OBSTÁCULOS CERCANOS
       const nearbyObstacles = obstacleEntities.filter(obstacle => {
         const obstacleTransform = obstacle.getComponent(Transform);
-        return Math.abs(obstacleTransform.position[2] - shipTransform.position[2]) < 12;
+        const distance = Math.abs(obstacleTransform.position[2] - shipTransform.position[2]);
+        return distance < 8; // Reducir rango para mejor rendimiento
       });
       
       for (const obstacle of nearbyObstacles) {
@@ -51,12 +53,15 @@ export class CollisionSystem {
         const shipBox = shipCollision.getBoundingBox(shipTransform.position);
         const obstacleBox = obstacleCollision.getBoundingBox(obstacleTransform.position);
         
+        // MEJORAR DETECCIÓN DE COLISIÓN VERTICAL
         const isHorizontallyOver = this.checkHorizontalOverlap(shipBox, obstacleBox);
         
         if (isHorizontallyOver) {
           const distanceToTop = shipTransform.position[1] - obstacleBox.maxY;
+          const distanceToBottom = obstacleBox.minY - shipTransform.position[1];
           
-          if (distanceToTop >= -0.5 && distanceToTop <= this.platformDetectionRange) {
+          // Detección de plataforma (aterrizaje encima)
+          if (distanceToTop >= -0.3 && distanceToTop <= this.platformDetectionRange) {
             if (distanceToTop < nearestPlatformDistance) {
               nearestPlatformDistance = distanceToTop;
               platformHeight = obstacleBox.maxY;
@@ -201,5 +206,25 @@ export class CollisionSystem {
     return !(box1.maxX < box2.minX || box1.minX > box2.maxX ||
              box1.maxY < box2.minY || box1.minY > box2.maxY ||
              box1.maxZ < box2.minZ || box1.minZ > box2.maxZ);
+  }
+  
+  // NUEVA FUNCIÓN PARA COLISIÓN SÓLIDA
+  checkSolidCollision(shipBox, obstacleBox, shipPhysics) {
+    // Verificar colisión en todas las dimensiones
+    const xOverlap = shipBox.maxX > obstacleBox.minX && shipBox.minX < obstacleBox.maxX;
+    const yOverlap = shipBox.maxY > obstacleBox.minY && shipBox.minY < obstacleBox.maxY;
+    const zOverlap = shipBox.maxZ > obstacleBox.minZ && shipBox.minZ < obstacleBox.maxZ;
+    
+    // Si hay superposición en todas las dimensiones, es una colisión sólida
+    if (xOverlap && yOverlap && zOverlap) {
+      // Verificar si la nave está cayendo hacia la plataforma desde arriba
+      const isLandingOnTop = shipPhysics.velocity.y <= 0 && 
+                            shipBox.minY > obstacleBox.maxY - 0.5;
+      
+      // Si está aterrizando encima, no es colisión sólida
+      return !isLandingOnTop;
+    }
+    
+    return false;
   }
 }

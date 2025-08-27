@@ -126,19 +126,32 @@ export class MovementSystem {
     // Limitar movimiento lateral
     transform.position[0] = Math.max(-40, Math.min(40, transform.position[0]));
     
-    // Colisión con el suelo mejorada - flotación
+    // Colisión con el suelo mejorada - REBOTE CORREGIDO
     const groundLevel = this.groundHoverHeight;
     if (transform.position[1] <= groundLevel) {
       transform.position[1] = groundLevel;
       
-      // Rebote más dinámico
-      if (physics.velocity.y < -8 && physics.bounceCount < physics.maxBounces) {
-        physics.bounceVelocity = Math.abs(physics.velocity.y) * 0.3; // Rebote más fuerte
+      // Rebote mejorado - más consistente y controlado
+      if (physics.velocity.y < -2 && physics.bounceCount < physics.maxBounces) { // Reducido umbral
+        physics.bounceVelocity = Math.abs(physics.velocity.y) * 0.35; // Rebote más controlado
         physics.bounceCount++;
+        
+        // Limitar rebote máximo para evitar rebotes excesivos
+        physics.bounceVelocity = Math.min(physics.bounceVelocity, 8);
       }
       
       physics.velocity.y = 0;
       physics.isGrounded = true;
+      
+      // Resetear contador de rebotes de forma más inmediata
+      if (physics.isGrounded && Math.abs(physics.velocity.y) < 0.1) {
+        // Resetear inmediatamente si la nave está estable
+        physics.bounceCount = 0;
+        physics.bounceVelocity = 0;
+      }
+    } else {
+      // Resetear estado de suelo cuando está en el aire
+      physics.isGrounded = false;
     }
   }
 }

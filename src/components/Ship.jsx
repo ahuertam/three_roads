@@ -1,6 +1,8 @@
 import React, { useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Transform } from '../ecs/components/Transform.js';
+import { Physics } from '../ecs/components/Physics.js';
+import { Input } from '../ecs/components/Input.js';
 
 function Ship({ ecsEntity }) {
   const shipRef = useRef();
@@ -10,8 +12,39 @@ function Ship({ ecsEntity }) {
     if (!shipRef.current || !ecsEntity) return;
     
     const transform = ecsEntity.getComponent(Transform);
+    const physics = ecsEntity.getComponent(Physics);
+    const input = ecsEntity.getComponent(Input);
+    
     if (transform) {
       shipRef.current.position.set(...transform.position);
+      
+      // Orientación realista de la nave - CORREGIDA
+      let rotationX = 0; // Pitch (arriba/abajo)
+      let rotationY = Math.PI; // Rotar 180 grados para que mire hacia adelante
+      let rotationZ = 0; // Roll (izquierda/derecha)
+      
+      if (physics) {
+        // Inclinación hacia arriba/abajo basada en velocidad vertical
+        rotationX = Math.max(-0.3, Math.min(0.3, physics.velocity.y * 0.05)); // Cambié el signo
+        
+        // Inclinación lateral basada en velocidad horizontal
+        rotationZ = Math.max(-0.2, Math.min(0.2, -physics.velocity.x * 0.03)); // Cambié el signo
+        
+        // Inclinación adicional cuando está girando activamente
+        if (input) {
+          if (input.keys.left) {
+            rotationZ -= 0.15; // Inclinar hacia la izquierda (cambié signo)
+          }
+          if (input.keys.right) {
+            rotationZ += 0.15; // Inclinar hacia la derecha (cambié signo)
+          }
+        }
+      }
+      
+      // Aplicar rotaciones suavemente
+      shipRef.current.rotation.x = rotationX;
+      shipRef.current.rotation.y = rotationY;
+      shipRef.current.rotation.z = rotationZ;
       
       // Actualizar cámara
       camera.position.x = transform.position[0];
@@ -31,28 +64,28 @@ function Ship({ ecsEntity }) {
         <meshStandardMaterial color="#4488ff" metalness={0.6} roughness={0.4} />
       </mesh>
       
-      {/* Motores laterales */}
-      <mesh position={[-1.5, 0.2, -1]} castShadow>
+      {/* Motores laterales - REPOSICIONADOS hacia adelante */}
+      <mesh position={[-1.5, 0.2, 1]} castShadow>
         <cylinderGeometry args={[0.3, 0.4, 1.5]} />
         <meshStandardMaterial color="#2266cc" metalness={0.7} roughness={0.3} />
       </mesh>
-      <mesh position={[1.5, 0.2, -1]} castShadow>
+      <mesh position={[1.5, 0.2, 1]} castShadow>
         <cylinderGeometry args={[0.3, 0.4, 1.5]} />
         <meshStandardMaterial color="#2266cc" metalness={0.7} roughness={0.3} />
       </mesh>
       
-      {/* Cabina */}
-      <mesh position={[0, 0.8, 0.5]} castShadow>
+      {/* Cabina - REPOSICIONADA hacia atrás */}
+      <mesh position={[0, 0.8, -0.5]} castShadow>
         <sphereGeometry args={[0.6, 8, 6]} />
         <meshStandardMaterial color="#1144aa" metalness={0.5} roughness={0.5} transparent opacity={0.8} />
       </mesh>
       
-      {/* Propulsores */}
-      <mesh position={[-1.5, 0.2, -2]} castShadow>
+      {/* Propulsores - REPOSICIONADOS hacia adelante */}
+      <mesh position={[-1.5, 0.2, 2]} castShadow>
         <cylinderGeometry args={[0.2, 0.1, 0.8]} />
         <meshStandardMaterial color="#00BFFF" emissive="#0088cc" emissiveIntensity={0.5} />
       </mesh>
-      <mesh position={[1.5, 0.2, -2]} castShadow>
+      <mesh position={[1.5, 0.2, 2]} castShadow>
         <cylinderGeometry args={[0.2, 0.1, 0.8]} />
         <meshStandardMaterial color="#00BFFF" emissive="#0088cc" emissiveIntensity={0.5} />
       </mesh>
