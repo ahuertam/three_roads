@@ -10,7 +10,7 @@ export class EntityFactory {
     
     ship.addComponent(new Transform(position[0], position[1], position[2]));
     ship.addComponent(new Physics());
-    ship.addComponent(new Collision(3, 0.8, 6)); // Dimensiones exactas de la nave
+    ship.addComponent(new Collision(3, 0.8, 6));
     ship.addComponent(new Input());
     ship.addComponent(new Platform());
     

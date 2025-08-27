@@ -2,7 +2,17 @@ import { create } from 'zustand';
 
 const useGameStore = create((set, get) => ({
   shipPosition: [0, 0.5, -50],
-  setShipPosition: (position) => set({ shipPosition: position }),
+  initialZ: -50, // Posición Z inicial para calcular distancia
+  distanceTraveled: 0, // Nueva propiedad para metros recorridos
+  setShipPosition: (position) => {
+    const state = get();
+    // Calcular distancia recorrida basada en movimiento en Z
+    const distanceFromStart = Math.abs(position[2] - state.initialZ);
+    set({ 
+      shipPosition: position,
+      distanceTraveled: Math.floor(distanceFromStart)
+    });
+  },
   gameState: 'playing', // 'playing', 'crashed', 'gameOver', 'menu'
   score: 0,
   lives: 3,
@@ -53,12 +63,20 @@ const useGameStore = create((set, get) => ({
     speed: 1,
     gameTime: 0,
     shipPosition: [0, 0.5, -50],
+    initialZ: -50,
+    distanceTraveled: 0,
     onPlatform: false,
     platformHeight: 0,
     crashPosition: null
   }),
   
-  resetToMenu: () => set({ gameState: 'menu' })
+  resetToMenu: () => set({ gameState: 'menu' }),
+  supplies: 100,
+  currentEffect: 'none',
+  
+  // Add methods to update platform effects
+  setSupplies: (supplies) => set({ supplies }),
+  setCurrentEffect: (effect) => set({ currentEffect: effect }),
 }));
 
 export default useGameStore;

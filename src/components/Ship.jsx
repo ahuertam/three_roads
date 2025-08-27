@@ -24,36 +24,39 @@ function Ship({ ecsEntity }) {
   if (!ecsEntity) return null;
   
   return (
-    <mesh ref={shipRef} castShadow>
-      <boxGeometry args={[3, 0.8, 6]} />
-      <meshStandardMaterial color="#4488ff" metalness={0.6} roughness={0.3} />
+    <group ref={shipRef}>
+      {/* Cuerpo principal */}
+      <mesh position={[0, 0.5, 0]} castShadow>
+        <boxGeometry args={[2, 0.8, 4]} />
+        <meshStandardMaterial color="#4488ff" metalness={0.6} roughness={0.4} />
+      </mesh>
       
       {/* Motores laterales */}
-      <mesh position={[-2, -0.5, -1]} castShadow>
-        <boxGeometry args={[0.8, 1.2, 3]} />
-        <meshStandardMaterial color="#2266cc" metalness={0.7} roughness={0.2} />
+      <mesh position={[-1.5, 0.2, -1]} castShadow>
+        <cylinderGeometry args={[0.3, 0.4, 1.5]} />
+        <meshStandardMaterial color="#2266cc" metalness={0.7} roughness={0.3} />
       </mesh>
-      <mesh position={[2, -0.5, -1]} castShadow>
-        <boxGeometry args={[0.8, 1.2, 3]} />
-        <meshStandardMaterial color="#2266cc" metalness={0.7} roughness={0.2} />
+      <mesh position={[1.5, 0.2, -1]} castShadow>
+        <cylinderGeometry args={[0.3, 0.4, 1.5]} />
+        <meshStandardMaterial color="#2266cc" metalness={0.7} roughness={0.3} />
       </mesh>
       
       {/* Cabina */}
-      <mesh position={[0, 0.6, 1]} castShadow>
-        <boxGeometry args={[2, 1, 2]} />
-        <meshStandardMaterial color="#1144aa" metalness={0.8} roughness={0.1} transparent opacity={0.9} />
+      <mesh position={[0, 0.8, 0.5]} castShadow>
+        <sphereGeometry args={[0.6, 8, 6]} />
+        <meshStandardMaterial color="#1144aa" metalness={0.5} roughness={0.5} transparent opacity={0.8} />
       </mesh>
       
-      {/* Efectos de propulsión */}
-      <mesh position={[-2, -1, -3]} castShadow>
-        <boxGeometry args={[0.3, 0.3, 1]} />
-        <meshStandardMaterial color="#00ffff" emissive="#0088ff" emissiveIntensity={0.5} />
+      {/* Propulsores */}
+      <mesh position={[-1.5, 0.2, -2]} castShadow>
+        <cylinderGeometry args={[0.2, 0.1, 0.8]} />
+        <meshStandardMaterial color="#00BFFF" emissive="#0088cc" emissiveIntensity={0.5} />
       </mesh>
-      <mesh position={[2, -1, -3]} castShadow>
-        <boxGeometry args={[0.3, 0.3, 1]} />
-        <meshStandardMaterial color="#00ffff" emissive="#0088ff" emissiveIntensity={0.5} />
+      <mesh position={[1.5, 0.2, -2]} castShadow>
+        <cylinderGeometry args={[0.2, 0.1, 0.8]} />
+        <meshStandardMaterial color="#00BFFF" emissive="#0088cc" emissiveIntensity={0.5} />
       </mesh>
-    </mesh>
+    </group>
   );
 }
 

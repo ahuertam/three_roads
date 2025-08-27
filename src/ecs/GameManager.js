@@ -23,7 +23,8 @@ export class GameManager {
     
     // Orden importante: Input -> Movement -> Collision -> Particles -> Spawn
     this.inputSystem = new InputSystem(this.ecsManager);
-    this.movementSystem = new MovementSystem(this.ecsManager);
+    // En el constructor o método start, cuando se inicializa el MovementSystem:
+    this.movementSystem = new MovementSystem(this.ecsManager, this.gameStore);
     this.collisionSystem = new CollisionSystem(this.ecsManager, this.gameStore, this.particleSystem);
     this.obstacleSpawnSystem = new ObstacleSpawnSystem(this.ecsManager, this.gameStore);
     

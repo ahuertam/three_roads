@@ -2,10 +2,13 @@ import { Transform } from '../components/Transform.js';
 import { Physics } from '../components/Physics.js';
 import { Input } from '../components/Input.js';
 import { Platform } from '../components/Platform.js';
+import { PlatformEffect } from '../components/PlatformEffect.js';
+import useGameStore from '../../store/gameStore.js';
 
 export class MovementSystem {
-  constructor(ecsManager) {
+  constructor(ecsManager, gameStore) {
     this.ecsManager = ecsManager;
+    this.gameStore = gameStore;
     this.baseSpeed = 5;
     this.groundHoverHeight = 0.6; // Altura de flotación sobre el suelo
   }
@@ -19,13 +22,25 @@ export class MovementSystem {
       const input = entity.getComponent(Input);
       const platform = entity.getComponent(Platform);
       
-      this.handleInput(input, physics, platform, delta);
+      // Obtener o crear componente de efectos
+      let platformEffect = entity.getComponent(PlatformEffect);
+      if (!platformEffect) {
+        platformEffect = new PlatformEffect();
+        entity.addComponent(platformEffect);
+      }
+      
+      this.handleInput(input, physics, platform, platformEffect, delta);
       this.applyPhysics(transform, physics, platform, delta);
       this.updatePosition(transform, physics, delta);
+      
+      // Actualizar el game store con los suministros
+      if (this.gameStore) {
+        this.gameStore.setSupplies(platformEffect.getSuppliesPercentage());
+      }
     });
   }
   
-  handleInput(input, physics, platform, delta) {
+  handleInput(input, physics, platform, platformEffect, delta) {
     // Movimiento lateral
     if (input.keys.left) {
       physics.velocity.x = -input.lateralSpeed;
@@ -35,9 +50,19 @@ export class MovementSystem {
       physics.velocity.x *= physics.friction;
     }
     
-    // Movimiento hacia adelante
+    // Movimiento hacia adelante con consumo de suministros MUY REDUCIDO
     if (input.keys.forward) {
-      this.baseSpeed = Math.min(this.baseSpeed + input.accelerationSpeed * delta, 20);
+      // Solo acelerar si hay suministros
+      if (platformEffect.supplies > 0) {
+        this.baseSpeed = Math.min(this.baseSpeed + input.accelerationSpeed * delta, 20);
+        
+        // Consumir suministros al acelerar - CONSUMO MÍNIMO
+        const accelerationConsumption = 2; // Consumo fijo muy bajo de solo 2 por segundo
+        platformEffect.supplies = Math.max(0, platformEffect.supplies - accelerationConsumption * delta);
+      } else {
+        // Sin suministros, velocidad se reduce gradualmente
+        this.baseSpeed = Math.max(this.baseSpeed * 0.95, 3);
+      }
     } else if (input.keys.backward) {
       this.baseSpeed = Math.max(this.baseSpeed - input.accelerationSpeed * delta, 2);
     } else {

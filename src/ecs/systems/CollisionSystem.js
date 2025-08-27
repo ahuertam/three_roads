@@ -2,21 +2,21 @@ import { Transform } from '../components/Transform.js';
 import { Collision } from '../components/Collision.js';
 import { Platform } from '../components/Platform.js';
 import { Physics } from '../components/Physics.js';
+import { PlatformEffect } from '../components/PlatformEffect.js';
 import useGameStore from '../../store/gameStore.js';
 
 export class CollisionSystem {
   constructor(ecsManager, gameStore, particleSystem = null) {
     this.ecsManager = ecsManager;
+    this.gameStore = gameStore; // Add this line to store the gameStore reference
     this.particleSystem = particleSystem;
     this.hoverHeight = 0.8;
     this.platformDetectionRange = 1.5;
   }
   
   update() {
-    // Obtener el estado actual del store directamente
     const { gameState } = useGameStore.getState();
     
-    // Solo procesar colisiones si el juego está en estado 'playing'
     if (gameState !== 'playing') return;
     
     const shipEntities = this.ecsManager.getEntitiesWithTag('player');
@@ -27,6 +27,13 @@ export class CollisionSystem {
       const shipCollision = ship.getComponent(Collision);
       const shipPlatform = ship.getComponent(Platform);
       const shipPhysics = ship.getComponent(Physics);
+      
+      // Agregar componente de efectos si no existe
+      let shipEffects = ship.getComponent(PlatformEffect);
+      if (!shipEffects) {
+        shipEffects = new PlatformEffect();
+        ship.addComponent(shipEffects);
+      }
       
       let onPlatform = false;
       let platformHeight = 0;
@@ -49,56 +56,115 @@ export class CollisionSystem {
         if (isHorizontallyOver) {
           const distanceToTop = shipTransform.position[1] - obstacleBox.maxY;
           
-          if (distanceToTop >= -this.hoverHeight && distanceToTop <= this.platformDetectionRange) {
-            const platformDistance = Math.abs(distanceToTop);
-            if (platformDistance < nearestPlatformDistance) {
-              onPlatform = true;
+          if (distanceToTop >= -0.5 && distanceToTop <= this.platformDetectionRange) {
+            if (distanceToTop < nearestPlatformDistance) {
+              nearestPlatformDistance = distanceToTop;
               platformHeight = obstacleBox.maxY;
-              nearestPlatformDistance = platformDistance;
+              onPlatform = true;
+              
+              // Aplicar efecto de plataforma
+              if (obstacle.platformType && distanceToTop <= 0.2) {
+                this.applyPlatformEffect(shipEffects, shipPhysics, obstacle.platformType);
+                
+                // Update the game store with platform effects
+                this.gameStore.setSupplies(shipEffects.getSuppliesPercentage());
+                this.gameStore.setCurrentEffect(shipEffects.currentEffect);
+              }
             }
           }
           
-          // Verificar colisión frontal/lateral
-          const intersects = this.checkFullIntersection(shipBox, obstacleBox);
-          if (intersects && distanceToTop < -this.hoverHeight) {
-            this.handleCrash(shipTransform.position);
+          // Colisión lateral o frontal
+          if (this.checkCollision(shipBox, obstacleBox)) {
+            if (obstacle.platformType === 'BURNING') {
+              // Daño por plataforma ardiente
+              this.handleBurningDamage(ship);
+            } else {
+              this.handleCollision(ship, obstacleTransform.position);
+            }
             return;
           }
         }
-        
-        // Verificar colisión lateral específica
-        if (this.checkLateralCollision(shipBox, obstacleBox)) {
-          this.handleCrash(shipTransform.position);
-          return;
-        }
       }
       
-      // Actualizar estado de plataforma
-      if (shipPlatform) {
-        const wasOnPlatform = shipPlatform.isOnPlatform;
-        shipPlatform.isOnPlatform = onPlatform;
-        
-        if (onPlatform) {
-          const targetHeight = platformHeight + this.hoverHeight;
-          const currentHeight = shipTransform.position[1];
-          
-          if (Math.abs(currentHeight - targetHeight) > 0.1) {
-            const lerpFactor = wasOnPlatform ? 0.15 : 0.08;
-            shipTransform.position[1] = this.lerp(currentHeight, targetHeight, lerpFactor);
-          } else {
-            shipTransform.position[1] = targetHeight;
-          }
-          
-          if (shipPhysics && shipPhysics.velocity.y < 0) {
-            shipPhysics.velocity.y *= 0.3;
-          }
-        } else if (wasOnPlatform && !onPlatform) {
-          if (shipPhysics && shipPhysics.velocity.y > 0) {
-            shipPhysics.velocity.y *= 1.2;
-          }
-        }
+      // Actualizar efectos
+      shipEffects.update(1/60); // Asumiendo 60 FPS
+      
+      // Aplicar efectos activos a la física
+      this.applyActiveEffects(shipPhysics, shipEffects);
+      
+      // Update game store with current effects
+      this.gameStore.setSupplies(shipEffects.getSuppliesPercentage());
+      this.gameStore.setCurrentEffect(shipEffects.currentEffect);
+      
+      if (onPlatform) {
+        shipPlatform.setOnPlatform(platformHeight);
+      } else {
+        shipPlatform.setOffPlatform();
       }
     });
+  }
+  
+  applyPlatformEffect(shipEffects, shipPhysics, platformType) {
+    switch(platformType) {
+      case 'BOOST':
+        shipEffects.applyEffect('boost');
+        break;
+      case 'STICKY':
+        shipEffects.applyEffect('sticky');
+        break;
+      case 'SLIPPERY':
+        shipEffects.applyEffect('slippery');
+        break;
+      case 'BURNING':
+        shipEffects.applyEffect('burning');
+        break;
+      case 'SUPPLIES':
+        shipEffects.applyEffect('supplies');
+        break;
+    }
+  }
+  
+  applyActiveEffects(shipPhysics, shipEffects) {
+    // Boost: aumenta velocidad
+    if (shipEffects.isEffectActive('boost')) {
+      shipPhysics.velocity.z *= 1.5;
+    }
+    
+    // Sticky: reduce velocidad lateral
+    if (shipEffects.isEffectActive('sticky')) {
+      shipPhysics.velocity.x *= 0.5;
+    }
+    
+    // Slippery: reduce fricción
+    if (shipEffects.isEffectActive('slippery')) {
+      shipPhysics.friction = 0.95;
+    } else {
+      shipPhysics.friction = 0.85; // Valor normal
+    }
+    
+    // Burning: daño continuo
+    if (shipEffects.isEffectActive('burning')) {
+      // El daño se maneja en handleBurningDamage
+    }
+  }
+  
+  handleBurningDamage(ship) {
+    // Reducir suministros o vida
+    const shipEffects = ship.getComponent(PlatformEffect);
+    if (shipEffects.supplies > 0) {
+      shipEffects.supplies = Math.max(0, shipEffects.supplies - 10);
+    } else {
+      // Si no hay suministros, causar daño real
+      this.handleCollision(ship, ship.getComponent(Transform).position);
+    }
+  }
+  
+  handleCollision(ship, position) {
+    this.handleCrash(position);
+  }
+  
+  checkCollision(shipBox, obstacleBox) {
+    return this.checkLateralCollision(shipBox, obstacleBox);
   }
   
   handleCrash(position) {

@@ -2,6 +2,7 @@ import React from 'react';
 import { Canvas } from '@react-three/fiber';
 import Game from './components/Game';
 import CrashOverlay from './components/CrashOverlay';
+import HUD from './components/HUD';
 import './App.css';
 
 function App() {
@@ -13,6 +14,9 @@ function App() {
       >
         <Game />
       </Canvas>
+      
+      {/* HUD con contador de distancia */}
+      <HUD />
       
       {/* Overlay para el mensaje de crash */}
       <CrashOverlay />
