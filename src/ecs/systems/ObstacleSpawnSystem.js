@@ -48,7 +48,7 @@ export class ObstacleSpawnSystem {
     
     this.spawnTimer += delta;
     
-    if (this.spawnTimer > 3) {
+    if (this.spawnTimer > 1.5) { // Reducido de 3 a 1.5 segundos
       if (this.spawnMode === 'adaptive') {
         this.spawnAdaptivePattern();
       } else {

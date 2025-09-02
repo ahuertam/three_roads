@@ -31,7 +31,7 @@ export class MovementSystem {
       
       this.handleInput(input, physics, platform, platformEffect, delta);
       this.applyPhysics(transform, physics, platform, delta);
-      this.updatePosition(transform, physics, delta);
+      this.updatePosition(transform, physics, platform, delta); // Agregar parámetro platform
       
       // Actualizar el game store con los suministros
       if (this.gameStore) {
@@ -60,7 +60,7 @@ export class MovementSystem {
     if (input.keys.forward) {
       // Solo acelerar si hay suministros
       if (platformEffect.supplies > 0) {
-        this.baseSpeed = Math.min(this.baseSpeed + input.accelerationSpeed * delta, 30); // Aumentado de 20 a 30
+        this.baseSpeed = Math.min(this.baseSpeed + input.accelerationSpeed * delta, 200); // Aumentado de 30 a 60
         
         // Consumir suministros al acelerar - CONSUMO MÍNIMO
         const accelerationConsumption = 1.5; // Reducido de 2 a 1.5
@@ -147,7 +147,7 @@ export class MovementSystem {
     }
   }
   
-  updatePosition(transform, physics, delta) {
+  updatePosition(transform, physics, platform, delta) {
     transform.position[0] += physics.velocity.x * delta;
     transform.position[1] += physics.velocity.y * delta;
     transform.position[2] += physics.velocity.z * delta;
@@ -155,27 +155,54 @@ export class MovementSystem {
     // Limitar movimiento lateral
     transform.position[0] = Math.max(-40, Math.min(40, transform.position[0]));
     
+    // NUEVO: Hacer que la nave flote por encima de las plataformas
+    if (platform?.isOnPlatform) {
+      const floatHeight = 1.5; // Altura de flotación por encima de la plataforma
+      const targetY = platform.platformHeight + floatHeight;
+      
+      // Ajustar suavemente la posición Y para flotar
+      if (transform.position[1] < targetY) {
+        transform.position[1] = Math.min(targetY, transform.position[1] + 15 * delta);
+      }
+      
+      // Estabilizar la nave cuando está flotando
+      if (Math.abs(transform.position[1] - targetY) < 0.2) {
+        physics.velocity.y = Math.max(0, physics.velocity.y * 0.8);
+      }
+      
+      // EFECTO REBOTE cuando la nave aterriza en la plataforma desde arriba
+      if (physics.velocity.y < -2.0 && transform.position[1] <= targetY + 0.5) {
+        const impactVelocity = Math.abs(physics.velocity.y);
+        physics.bounceVelocity = impactVelocity * 0.4; // Rebote suave en plataformas
+        physics.bounceCount = 1;
+        physics.velocity.y = 0;
+        
+        // Sonido de aterrizaje suave - CORREGIDO
+        audioSystem.playBounceSound(0.3, 1);
+      }
+    }
+    
     // Colisión con el suelo mejorada - REBOTE MÁS NOTORIO
     const groundLevel = this.groundHoverHeight;
     if (transform.position[1] <= groundLevel) {
       transform.position[1] = groundLevel;
       
       // Rebote mejorado - más intenso y notorio
-      if (physics.velocity.y < -1.2 && physics.bounceCount < physics.maxBounces) { // Reducido umbral de -1.5 a -1.2
+      if (physics.velocity.y < -1.2 && physics.bounceCount < physics.maxBounces) {
         // Rebote más intenso basado en la velocidad de impacto
         const impactVelocity = Math.abs(physics.velocity.y);
         physics.bounceVelocity = impactVelocity * physics.bounceIntensity;
         physics.bounceCount++;
         
         // Limitar rebote máximo pero permitir rebotes más altos
-        physics.bounceVelocity = Math.min(physics.bounceVelocity, 15); // Aumentado de 12 a 15
+        physics.bounceVelocity = Math.min(physics.bounceVelocity, 15);
         
         // Añadir un pequeño impulso adicional para hacer el rebote más notorio
         if (physics.bounceCount === 1) {
-          physics.bounceVelocity *= 1.3; // Aumentado de 1.2 a 1.3
+          physics.bounceVelocity *= 1.3;
         }
         
-        // REPRODUCIR SONIDO DE REBOTE
+        // REPRODUCIR SONIDO DE REBOTE - CORREGIDO
         const bounceIntensity = Math.min(1.0, impactVelocity / 15);
         audioSystem.playBounceSound(bounceIntensity, physics.bounceCount);
       }
@@ -184,7 +211,7 @@ export class MovementSystem {
       physics.isGrounded = true;
       
       // Resetear contador de rebotes de forma más gradual
-      if (physics.isGrounded && Math.abs(physics.velocity.y) < 0.1 && physics.bounceVelocity < 0.3) { // Umbrales más bajos
+      if (physics.isGrounded && Math.abs(physics.velocity.y) < 0.1 && physics.bounceVelocity < 0.3) {
         physics.bounceCount = 0;
         physics.bounceVelocity = 0;
       }
