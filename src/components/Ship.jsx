@@ -76,7 +76,7 @@ function Ship({ ecsEntity }) {
       {/* Cabina - en la parte delantera */}
       <mesh position={[0, 0.8, 0.5]} castShadow>
         <sphereGeometry args={[0.6, 8, 6]} />
-        <meshStandardMaterial color="#1144aa" metalness={0.5} roughness={0.5} transparent opacity={0.8} />
+        <meshStandardMaterial color="#1144aa" metalness={0.5} roughness={0.5} opacity={1.0} />
       </mesh>
       
       {/* Propulsores - en la parte más trasera */}

@@ -5,6 +5,7 @@ import { CollisionSystem } from './systems/CollisionSystem.js';
 import { ObstacleSpawnSystem } from './systems/ObstacleSpawnSystem.js';
 import { ParticleSystem } from './systems/ParticleSystem.js';
 import { EntityFactory } from './entities/EntityFactory.js';
+import { audioSystem } from './systems/AudioSystem.js';
 
 export class GameManager {
   constructor(gameStore) {
@@ -15,6 +16,9 @@ export class GameManager {
     
     this.initializeSystems();
     this.initializeEntities();
+    
+    // Inicializar sistema de audio
+    this.audioSystem = audioSystem;
   }
   
   initializeSystems() {
@@ -84,5 +88,14 @@ export class GameManager {
   destroy() {
     this.inputSystem.destroy();
     this.stop();
+  }
+  
+  // Método para controlar el volumen desde la UI si es necesario
+  setAudioVolume(volume) {
+    this.audioSystem.setMasterVolume(volume);
+  }
+  
+  toggleAudio() {
+    return this.audioSystem.toggleSound();
   }
 }

@@ -1,9 +1,11 @@
 import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Transform } from '../ecs/components/Transform.js';
+import * as THREE from 'three';
 
 function Obstacle({ ecsEntity }) {
   const obstacleRef = useRef();
+  const edgesRef = useRef();
   
   // Tipos de plataformas según SkyRoads
   const platformTypes = {
@@ -21,6 +23,9 @@ function Obstacle({ ecsEntity }) {
     const transform = ecsEntity.getComponent(Transform);
     if (transform) {
       obstacleRef.current.position.set(...transform.position);
+      if (edgesRef.current) {
+        edgesRef.current.position.set(...transform.position);
+      }
     }
   });
   
@@ -30,20 +35,28 @@ function Obstacle({ ecsEntity }) {
   const platformConfig = platformTypes[platformType];
   
   return (
-    <mesh
-      ref={obstacleRef}
-      castShadow
-      receiveShadow
-    >
-      <boxGeometry args={ecsEntity.size} />
-      <meshStandardMaterial 
-        color={platformConfig.color}
-        metalness={platformType === 'BURNING' ? 0.8 : 0.3}
-        roughness={platformType === 'SLIPPERY' ? 0.1 : 0.7}
-        emissive={platformType === 'BURNING' ? '#FF2000' : '#000000'}
-        emissiveIntensity={platformType === 'BURNING' ? 0.3 : 0}
-      />
-    </mesh>
+    <group>
+      <mesh
+        ref={obstacleRef}
+        castShadow
+        receiveShadow
+      >
+        <boxGeometry args={ecsEntity.size} />
+        <meshStandardMaterial 
+          color={platformConfig.color}
+          metalness={platformType === 'BURNING' ? 0.8 : 0.3}
+          roughness={platformType === 'SLIPPERY' ? 0.1 : 0.7}
+          emissive={platformType === 'BURNING' ? '#FF2000' : '#000000'}
+          emissiveIntensity={platformType === 'BURNING' ? 0.3 : 0}
+        />
+      </mesh>
+      
+      {/* Bordes naranja rojizo para visualizar mejor las colisiones */}
+      <lineSegments ref={edgesRef}>
+        <edgesGeometry args={[new THREE.BoxGeometry(...ecsEntity.size)]} />
+        <lineBasicMaterial color="#FF4500" linewidth={3} />
+      </lineSegments>
+    </group>
   );
 }
 

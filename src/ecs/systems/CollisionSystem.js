@@ -8,10 +8,10 @@ import useGameStore from '../../store/gameStore.js';
 export class CollisionSystem {
   constructor(ecsManager, gameStore, particleSystem = null) {
     this.ecsManager = ecsManager;
-    this.gameStore = gameStore; // Add this line to store the gameStore reference
+    this.gameStore = gameStore;
     this.particleSystem = particleSystem;
     this.hoverHeight = 0.8;
-    this.platformDetectionRange = 1.5;
+    this.platformDetectionRange = 2.0; // Aumentado de 1.5 a 2.0
   }
   
   update() {
@@ -60,28 +60,28 @@ export class CollisionSystem {
           const distanceToTop = shipTransform.position[1] - obstacleBox.maxY;
           const distanceToBottom = obstacleBox.minY - shipTransform.position[1];
           
-          // Detección de plataforma (aterrizaje encima)
-          if (distanceToTop >= -0.3 && distanceToTop <= this.platformDetectionRange) {
-            if (distanceToTop < nearestPlatformDistance) {
-              nearestPlatformDistance = distanceToTop;
-              platformHeight = obstacleBox.maxY;
-              onPlatform = true;
-              
-              // Aplicar efecto de plataforma
-              if (obstacle.platformType && distanceToTop <= 0.2) {
-                this.applyPlatformEffect(shipEffects, shipPhysics, obstacle.platformType);
+          // DETECCIÓN MEJORADA DE PLATAFORMA
+          if (distanceToTop >= -1.0 && distanceToTop <= this.platformDetectionRange) { // Cambiado de -0.5 a -1.0
+            // Verificar que la nave esté cayendo o cerca de la superficie
+            if (shipPhysics.velocity.y <= 1.0 || distanceToTop <= 0.5) { // Más permisivo
+              if (distanceToTop < nearestPlatformDistance) {
+                nearestPlatformDistance = distanceToTop;
+                platformHeight = obstacleBox.maxY;
+                onPlatform = true;
                 
-                // Update the game store with platform effects
-                this.gameStore.setSupplies(shipEffects.getSuppliesPercentage());
-                this.gameStore.setCurrentEffect(shipEffects.currentEffect);
+                // Aplicar efecto de plataforma con rango más amplio
+                if (obstacle.platformType && distanceToTop <= 0.5) { // Cambiado de 0.2 a 0.5
+                  this.applyPlatformEffect(shipEffects, shipPhysics, obstacle.platformType);
+                  this.gameStore.setSupplies(shipEffects.getSuppliesPercentage());
+                  this.gameStore.setCurrentEffect(shipEffects.currentEffect);
+                }
               }
             }
           }
           
-          // Colisión lateral o frontal
-          if (this.checkCollision(shipBox, obstacleBox)) {
+          // COLISIÓN SÓLIDA MEJORADA - evitar atravesar plataformas
+          if (this.checkSolidCollisionImproved(shipBox, obstacleBox, shipPhysics, shipTransform)) {
             if (obstacle.platformType === 'BURNING') {
-              // Daño por plataforma ardiente
               this.handleBurningDamage(ship);
             } else {
               this.handleCollision(ship, obstacleTransform.position);
@@ -140,9 +140,13 @@ export class CollisionSystem {
       shipPhysics.velocity.x *= 0.5;
     }
     
-    // Slippery: reduce fricción
+    // Slippery: reduce fricción y mejora el deslizamiento
     if (shipEffects.isEffectActive('slippery')) {
-      shipPhysics.friction = 0.95;
+      shipPhysics.friction = 0.98; // Cambiado de 0.95 a 0.98 para mejor control
+      // Reducir velocidad lateral gradualmente para evitar colisiones bruscas
+      if (Math.abs(shipPhysics.velocity.x) > 8) {
+        shipPhysics.velocity.x *= 0.95;
+      }
     } else {
       shipPhysics.friction = 0.85; // Valor normal
     }
@@ -208,21 +212,46 @@ export class CollisionSystem {
              box1.maxZ < box2.minZ || box1.minZ > box2.maxZ);
   }
   
-  // NUEVA FUNCIÓN PARA COLISIÓN SÓLIDA
-  checkSolidCollision(shipBox, obstacleBox, shipPhysics) {
-    // Verificar colisión en todas las dimensiones
+  // NUEVA FUNCIÓN MEJORADA PARA COLISIÓN SÓLIDA
+  checkSolidCollisionImproved(shipBox, obstacleBox, shipPhysics, shipTransform) {
+    // Verificar superposición en todas las dimensiones
     const xOverlap = shipBox.maxX > obstacleBox.minX && shipBox.minX < obstacleBox.maxX;
     const yOverlap = shipBox.maxY > obstacleBox.minY && shipBox.minY < obstacleBox.maxY;
     const zOverlap = shipBox.maxZ > obstacleBox.minZ && shipBox.minZ < obstacleBox.maxZ;
     
-    // Si hay superposición en todas las dimensiones, es una colisión sólida
     if (xOverlap && yOverlap && zOverlap) {
-      // Verificar si la nave está cayendo hacia la plataforma desde arriba
-      const isLandingOnTop = shipPhysics.velocity.y <= 0 && 
-                            shipBox.minY > obstacleBox.maxY - 0.5;
+      // Calcular la distancia desde la parte inferior de la nave hasta la parte superior del obstáculo
+      const distanceToTop = shipTransform.position[1] - obstacleBox.maxY;
       
-      // Si está aterrizando encima, no es colisión sólida
-      return !isLandingOnTop;
+      // Verificar si está aterrizando desde arriba (permitido)
+      const isLandingFromAbove = shipPhysics.velocity.y <= 1.0 && // Más permisivo para velocidad
+                                distanceToTop >= -1.0 && distanceToTop <= 1.5; // Rango más amplio
+      
+      // Verificar si está deslizándose lateralmente
+      const isSliding = Math.abs(shipPhysics.velocity.x) > 4; // Reducido umbral
+      
+      // Solo considerar colisión lateral si está significativamente dentro del obstáculo
+      const shipCenterX = shipTransform.position[0];
+      const obstacleCenterX = (obstacleBox.minX + obstacleBox.maxX) / 2;
+      const obstacleHalfWidth = (obstacleBox.maxX - obstacleBox.minX) / 2;
+      
+      // Más tolerancia para colisiones laterales, especialmente al deslizarse
+      let lateralTolerance = isSliding ? 2.0 : 1.0;
+      const isDeepLateralCollision = Math.abs(shipCenterX - obstacleCenterX) < obstacleHalfWidth - lateralTolerance;
+      
+      // Verificar si está atravesando desde abajo (definitivamente no permitido)
+      const isFromBelow = shipTransform.position[1] < obstacleBox.minY - 0.5 && shipPhysics.velocity.y > 0;
+      
+      // Verificar colisión frontal solo si está claramente dentro del obstáculo
+      const shipCenterZ = shipTransform.position[2];
+      const obstacleDepth = obstacleBox.maxZ - obstacleBox.minZ;
+      const isFrontalCollision = shipPhysics.velocity.z < 0 && 
+                                shipCenterZ > obstacleBox.minZ + obstacleDepth * 0.3 && 
+                                shipCenterZ < obstacleBox.maxZ - obstacleDepth * 0.3 &&
+                                !isLandingFromAbove;
+      
+      // Es colisión sólida solo en casos claros
+      return isFromBelow || (isDeepLateralCollision && !isLandingFromAbove) || isFrontalCollision;
     }
     
     return false;
