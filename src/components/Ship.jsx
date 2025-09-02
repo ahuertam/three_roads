@@ -18,25 +18,24 @@ function Ship({ ecsEntity }) {
     if (transform) {
       shipRef.current.position.set(...transform.position);
       
-      // Orientación realista de la nave - CORREGIDA
       let rotationX = 0; // Pitch (arriba/abajo)
-      let rotationY = Math.PI; // Rotar 180 grados para que mire hacia adelante
+      let rotationY = 3.2; // Sin rotación Y - la nave mira hacia Z negativo naturalmente
       let rotationZ = 0; // Roll (izquierda/derecha)
       
       if (physics) {
         // Inclinación hacia arriba/abajo basada en velocidad vertical
-        rotationX = Math.max(-0.3, Math.min(0.3, physics.velocity.y * 0.05)); // Cambié el signo
+        rotationX = Math.max(-0.3, Math.min(0.3, physics.velocity.y * 0.05));
         
         // Inclinación lateral basada en velocidad horizontal
-        rotationZ = Math.max(-0.2, Math.min(0.2, -physics.velocity.x * 0.03)); // Cambié el signo
+        rotationZ = Math.max(-0.2, Math.min(0.2, physics.velocity.x * 0.03));
         
-        // Inclinación adicional cuando está girando activamente
+        // Inclinación adicional cuando está girando
         if (input) {
           if (input.keys.left) {
-            rotationZ -= 0.15; // Inclinar hacia la izquierda (cambié signo)
+            rotationZ -= 0.18; // Inclinar hacia la izquierda
           }
           if (input.keys.right) {
-            rotationZ += 0.15; // Inclinar hacia la derecha (cambié signo)
+            rotationZ += 0.18; // Inclinar hacia la derecha
           }
         }
       }
@@ -46,10 +45,10 @@ function Ship({ ecsEntity }) {
       shipRef.current.rotation.y = rotationY;
       shipRef.current.rotation.z = rotationZ;
       
-      // Actualizar cámara
       camera.position.x = transform.position[0];
       camera.position.y = transform.position[1] + 8;
       camera.position.z = transform.position[2] + 20;
+      // La cámara mira hacia donde se dirige la nave (Z negativo)
       camera.lookAt(transform.position[0], transform.position[1], transform.position[2] - 10);
     }
   });
@@ -64,28 +63,28 @@ function Ship({ ecsEntity }) {
         <meshStandardMaterial color="#4488ff" metalness={0.6} roughness={0.4} />
       </mesh>
       
-      {/* Motores laterales - REPOSICIONADOS hacia adelante */}
-      <mesh position={[-1.5, 0.2, 1]} castShadow>
+      {/* Motores laterales - en la parte trasera */}
+      <mesh position={[-1.5, 0.2, -1]} castShadow>
         <cylinderGeometry args={[0.3, 0.4, 1.5]} />
         <meshStandardMaterial color="#2266cc" metalness={0.7} roughness={0.3} />
       </mesh>
-      <mesh position={[1.5, 0.2, 1]} castShadow>
+      <mesh position={[1.5, 0.2, -1]} castShadow>
         <cylinderGeometry args={[0.3, 0.4, 1.5]} />
         <meshStandardMaterial color="#2266cc" metalness={0.7} roughness={0.3} />
       </mesh>
       
-      {/* Cabina - REPOSICIONADA hacia atrás */}
-      <mesh position={[0, 0.8, -0.5]} castShadow>
+      {/* Cabina - en la parte delantera */}
+      <mesh position={[0, 0.8, 0.5]} castShadow>
         <sphereGeometry args={[0.6, 8, 6]} />
         <meshStandardMaterial color="#1144aa" metalness={0.5} roughness={0.5} transparent opacity={0.8} />
       </mesh>
       
-      {/* Propulsores - REPOSICIONADOS hacia adelante */}
-      <mesh position={[-1.5, 0.2, 2]} castShadow>
+      {/* Propulsores - en la parte más trasera */}
+      <mesh position={[-1.5, 0.2, -2]} castShadow>
         <cylinderGeometry args={[0.2, 0.1, 0.8]} />
         <meshStandardMaterial color="#00BFFF" emissive="#0088cc" emissiveIntensity={0.5} />
       </mesh>
-      <mesh position={[1.5, 0.2, 2]} castShadow>
+      <mesh position={[1.5, 0.2, -2]} castShadow>
         <cylinderGeometry args={[0.2, 0.1, 0.8]} />
         <meshStandardMaterial color="#00BFFF" emissive="#0088cc" emissiveIntensity={0.5} />
       </mesh>
