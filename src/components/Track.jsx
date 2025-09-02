@@ -18,9 +18,9 @@ function Track() {
     const shipZ = shipPosition[2];
     
     setTrackSegments(currentSegments => {
-      // Si la nave ha pasado la mitad del primer plano (Z < -100)
-      // Nota: Como va hacia Z negativo, comparamos con menor que
-      if (shipZ < currentSegments[0].position[2] - 100) {
+      // Cambio de -100 a -130 para esperar 1 segundo más (30 unidades adicionales)
+      // Si la nave ha pasado más del primer plano (Z < -130)
+      if (shipZ < currentSegments[0].position[2] - 130) {
         // El segundo plano se convierte en el primero
         const newCurrentPlane = currentSegments[1];
         
