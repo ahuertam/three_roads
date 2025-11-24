@@ -1,15 +1,17 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import useGameStore from '../store/gameStore.js';
 import { GameManager } from '../ecs/GameManager.js';
 
 export function useECS() {
   const gameManager = useRef(null);
-  const gameStore = useGameStore();
-  
+  const [isReady, setIsReady] = useState(false);
+
   useEffect(() => {
-    gameManager.current = new GameManager(gameStore);
+    // Pasar el store instance (useGameStore) en lugar del snapshot
+    gameManager.current = new GameManager(useGameStore);
     gameManager.current.start();
+    setIsReady(true);
     
     return () => {
       if (gameManager.current) {
@@ -18,9 +20,19 @@ export function useECS() {
     };
   }, []);
   
+  const [entityVersion, setEntityVersion] = useState(0);
+  const lastEntityCount = useRef(0);
+
   useFrame((state, delta) => {
     if (gameManager.current) {
       gameManager.current.update(delta);
+      
+      // Check if we need to re-render React components (e.g. new obstacles)
+      const currentCount = gameManager.current.ecsManager.entities.size;
+      if (currentCount !== lastEntityCount.current) {
+        lastEntityCount.current = currentCount;
+        setEntityVersion(v => v + 1);
+      }
     }
   });
   

@@ -35,7 +35,7 @@ export class MovementSystem {
       
       // Actualizar el game store con los suministros
       if (this.gameStore) {
-        this.gameStore.setSupplies(platformEffect.getSuppliesPercentage());
+        this.gameStore.getState().setSupplies(platformEffect.getSuppliesPercentage());
       }
     });
   }
@@ -182,40 +182,38 @@ export class MovementSystem {
       }
     }
     
-    // Colisión con el suelo mejorada - REBOTE MÁS NOTORIO
-    const groundLevel = this.groundHoverHeight;
-    if (transform.position[1] <= groundLevel) {
-      transform.position[1] = groundLevel;
+    // Colisión con el suelo ELIMINADA para permitir caer al vacío (SkyRoads style)
+    // En su lugar, verificamos si ha caído demasiado para reiniciar/morir
+    const deathThreshold = -30;
+    if (transform.position[1] <= deathThreshold) {
+      // Notificar al GameStore que el jugador ha muerto
+      const currentState = this.gameStore.getState();
       
-      // Rebote mejorado - más intenso y notorio
-      if (physics.velocity.y < -1.2 && physics.bounceCount < physics.maxBounces) {
-        // Rebote más intenso basado en la velocidad de impacto
-        const impactVelocity = Math.abs(physics.velocity.y);
-        physics.bounceVelocity = impactVelocity * physics.bounceIntensity;
-        physics.bounceCount++;
+      // Solo actualizar si no estamos ya en gameover para evitar bucles
+      if (currentState.gameState === 'playing') {
+        console.log('Player fell into void');
+        currentState.setGameState('gameover');
         
-        // Limitar rebote máximo pero permitir rebotes más altos
-        physics.bounceVelocity = Math.min(physics.bounceVelocity, 15);
-        
-        // Añadir un pequeño impulso adicional para hacer el rebote más notorio
-        if (physics.bounceCount === 1) {
-          physics.bounceVelocity *= 1.3;
-        }
-        
-        // REPRODUCIR SONIDO DE REBOTE - CORREGIDO
-        const bounceIntensity = Math.min(1.0, impactVelocity / 15);
-        audioSystem.playBounceSound(bounceIntensity, physics.bounceCount);
+        // Detener la nave para que no siga cayendo infinitamente
+        physics.velocity.x = 0;
+        physics.velocity.y = 0;
+        physics.velocity.z = 0;
+        // Opcional: Reproducir sonido de caída/muerte
       }
-      
+    }
+    
+    // Si el juego ha terminado, no aplicar más física ni movimiento
+    const currentState = this.gameStore.getState();
+    if (currentState.gameState !== 'playing') {
+      physics.velocity.x = 0;
       physics.velocity.y = 0;
-      physics.isGrounded = true;
-      
-      // Resetear contador de rebotes de forma más gradual
-      if (physics.isGrounded && Math.abs(physics.velocity.y) < 0.1 && physics.bounceVelocity < 0.3) {
-        physics.bounceCount = 0;
-        physics.bounceVelocity = 0;
-      }
-    } else {
+      physics.velocity.z = 0;
+      return;
+    }
+    
+    // Ya no hay "suelo" infinito, solo plataformas
+    // physics.isGrounded se maneja via CollisionSystem cuando toca una plataforma
+    if (!platform?.isOnPlatform) {
       physics.isGrounded = false;
     }
   }

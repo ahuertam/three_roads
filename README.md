@@ -1,46 +1,66 @@
-# Getting Started with Create React App
+# Three Roads
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**Three Roads** is an immersive 3D racing/runner game built with modern web technologies. Navigate your ship through a dynamic environment, avoid obstacles, and survive as long as possible in this high-speed challenge.
 
-## Available Scripts
+## 🚀 Features
 
-In the project directory, you can run:
+-   **3D Graphics**: Powered by [React Three Fiber](https://docs.pmnd.rs/react-three-fiber) and [Three.js](https://threejs.org/) for performant and declarative 3D scenes.
+-   **Physics Engine**: Realistic physics interactions using [Cannon.js](https://github.com/pmndrs/use-cannon) (via `@react-three/cannon`).
+-   **ECS Architecture**: Built on a custom Entity Component System (ECS) for scalable and decoupled game logic.
+-   **Reactive State**: Game state management handled by [Zustand](https://github.com/pmndrs/zustand) for high-performance updates.
+-   **Dynamic Gameplay**:
+    -   Procedural track generation.
+    -   Interactive ship controls with visual feedback.
+    -   Real-time HUD displaying distance and score.
+    -   Crash detection and game over states.
 
-### `npm start`
+## 🎮 Controls
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Take command of your ship using the keyboard:
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+| Action | Key 1 | Key 2 |
+| :--- | :---: | :---: |
+| **Steer Left** | `A` | `←` (Left Arrow) |
+| **Steer Right** | `D` | `→` (Right Arrow) |
+| **Accelerate** | `W` | `↑` (Up Arrow) |
+| **Brake / Reverse** | `S` | `↓` (Down Arrow) |
+| **Jump** | `Space` | - |
 
-### `npm test`
+## 🛠️ Installation & Running
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1.  **Clone the repository:**
+    ```bash
+    git clone <repository-url>
+    cd three_roads
+    ```
 
-### `npm run build`
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+3.  **Start the development server:**
+    ```bash
+    npm start
+    ```
+    Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🏗️ Project Structure
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The project follows a component-based architecture mixed with ECS patterns:
 
-### `npm run eject`
+-   **`src/components/`**: React components for rendering the 3D scene (Ship, Track, Obstacles) and UI (HUD, CrashOverlay).
+-   **`src/ecs/`**: Core game logic.
+    -   **`components/`**: Data containers (e.g., `Transform`, `Physics`, `Input`).
+    -   **`systems/`**: Logic processors (e.g., `MovementSystem`, `CollisionSystem`, `InputSystem`).
+    -   **`entities/`**: Entity definitions and factories.
+    -   **`GameManager.js`**: Orchestrates the game loop and ECS initialization.
+-   **`src/store/`**: Global state management stores.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## 🤝 Contributing
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## 📄 License
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+This project is open source and available under the [MIT License](LICENSE).

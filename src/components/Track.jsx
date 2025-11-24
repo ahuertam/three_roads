@@ -114,6 +114,10 @@ function Track() {
   
   return (
     <group>
+      {/* 
+      Comentado para permitir el sistema de generación por segmentos (SkyRoads style)
+      Descomentar para debugging si se necesita un suelo de referencia
+      
       {trackSegments.map((segment) => (
         <TrackSegment 
           key={`track-${segment.id}`}
@@ -121,7 +125,8 @@ function Track() {
           id={segment.id}
           color={segment.color}
         />
-      ))}
+      ))} 
+      */}
     </group>
   );
 }

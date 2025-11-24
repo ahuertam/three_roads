@@ -15,7 +15,7 @@ export class CollisionSystem {
   }
   
   update() {
-    const { gameState } = useGameStore.getState();
+    const { gameState } = this.gameStore.getState();
     
     if (gameState !== 'playing') return;
     
@@ -42,8 +42,16 @@ export class CollisionSystem {
       // MEJORAR FILTRO DE OBSTÁCULOS CERCANOS
       const nearbyObstacles = obstacleEntities.filter(obstacle => {
         const obstacleTransform = obstacle.getComponent(Transform);
-        const distance = Math.abs(obstacleTransform.position[2] - shipTransform.position[2]);
-        return distance < 8; // Reducir rango para mejor rendimiento
+        const obstacleCollision = obstacle.getComponent(Collision);
+        
+        if (!obstacleTransform || !obstacleCollision) return false;
+        
+        const distZ = Math.abs(obstacleTransform.position[2] - shipTransform.position[2]);
+        const halfDepth = obstacleCollision.depth / 2;
+        
+        // Permitir si estamos dentro del rango Z del objeto (más un margen de seguridad)
+        // El margen de 20 asegura que detectemos objetos antes de llegar a ellos
+        return distZ < (halfDepth + 20);
       });
       
       for (const obstacle of nearbyObstacles) {
@@ -72,8 +80,8 @@ export class CollisionSystem {
                 // Aplicar efecto de plataforma con rango más amplio
                 if (obstacle.platformType && distanceToTop <= 0.5) { // Cambiado de 0.2 a 0.5
                   this.applyPlatformEffect(shipEffects, shipPhysics, obstacle.platformType);
-                  this.gameStore.setSupplies(shipEffects.getSuppliesPercentage());
-                  this.gameStore.setCurrentEffect(shipEffects.currentEffect);
+                  this.gameStore.getState().setSupplies(shipEffects.getSuppliesPercentage());
+                  this.gameStore.getState().setCurrentEffect(shipEffects.currentEffect);
                 }
               }
             }
@@ -98,8 +106,8 @@ export class CollisionSystem {
       this.applyActiveEffects(shipPhysics, shipEffects);
       
       // Update game store with current effects
-      this.gameStore.setSupplies(shipEffects.getSuppliesPercentage());
-      this.gameStore.setCurrentEffect(shipEffects.currentEffect);
+      this.gameStore.getState().setSupplies(shipEffects.getSuppliesPercentage());
+      this.gameStore.getState().setCurrentEffect(shipEffects.currentEffect);
       
       if (onPlatform) {
         shipPlatform.setOnPlatform(platformHeight);
@@ -183,7 +191,7 @@ export class CollisionSystem {
     }
     
     // Obtener el estado y acciones del store directamente
-    const { handleCollision } = useGameStore.getState();
+    const { handleCollision } = this.gameStore.getState();
     
     // Manejar colisión en el store
     handleCollision(position);

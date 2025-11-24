@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 const useGameStore = create((set, get) => ({
-  shipPosition: [0, 0.5, -50],
+  shipPosition: [0, 2, -50], // Subir un poco para asegurar caída limpia sobre la plataforma
   initialZ: -50, // Posición Z inicial para calcular distancia
   distanceTraveled: 0, // Nueva propiedad para metros recorridos
   setShipPosition: (position) => {
@@ -77,6 +77,7 @@ const useGameStore = create((set, get) => ({
   // Add methods to update platform effects
   setSupplies: (supplies) => set({ supplies }),
   setCurrentEffect: (effect) => set({ currentEffect: effect }),
+  setGameState: (state) => set({ gameState: state }),
 }));
 
 export default useGameStore;

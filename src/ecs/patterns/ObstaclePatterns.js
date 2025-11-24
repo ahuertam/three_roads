@@ -38,129 +38,125 @@ export function createObstacle(template, position, overrides = {}) {
   };
 }
 
-// Nuevos patrones continuos y variados
 export const PATTERN_LIBRARY = {
-  // === PATRONES FÁCILES ===
+  // === SEGMENTOS FÁCILES ===
   EASY: {
-    'flowing_path': {
-      name: 'Sendero Fluido',
+    'straight_road': {
+      name: 'Recta Simple',
       difficulty: 'easy',
-      description: 'Plataformas conectadas suavemente',
+      description: 'Camino recto básico',
+      // Ajustado: -120 coincide con la longitud de la plataforma (120)
+      exitPoint: { x: 0, y: 0, z: -120 },
       obstacles: [
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: 1, z: 0 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_MEDIUM, { x: -12, y: 1, z: -35 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_MEDIUM, { x: 8, y: 1, z: -70 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: 1, z: -105 })
+        // Suelo en Y=-1. Centro en Z=-60, longitud 120. Abarca de 0 a -220.
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: -1, z: -60, size: [20, 2, 220] })
       ]
     },
     
-    'gentle_waves': {
-      name: 'Ondas Suaves',
+    'gentle_climb': {
+      name: 'Subida Suave',
       difficulty: 'easy', 
-      description: 'Movimiento ondulante gradual',
+      description: 'Pequeña elevación',
+      // Ajustado: -120 coincide con 2 plataformas de 60
+      exitPoint: { x: 0, y: 2, z: -120 },
       obstacles: [
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_MEDIUM, { x: -10, y: 1, z: 0 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_MEDIUM, { x: 0, y: 1.5, z: -25 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_MEDIUM, { x: 10, y: 2, z: -50 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_MEDIUM, { x: 0, y: 1.5, z: -75 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_MEDIUM, { x: -10, y: 1, z: -100 })
+        // 0 a -60
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: -1, z: -30, size: [20, 2, 60] }),
+        // -60 a -120 (sube 1u -> Y=0, superficie en 1)
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: 0, z: -90, size: [20, 2, 60] }) 
       ]
     },
     
-    'stepping_stones': {
-      name: 'Piedras de Paso',
+    'small_gap': {
+      name: 'Pequeño Salto',
       difficulty: 'easy',
-      description: 'Secuencia de saltos simples',
+      description: 'Brecha fácil de saltar',
+      // Ajustado: -140 -> 50 (plat) + 20 (gap) + 70 (plat) = 140
+      exitPoint: { x: 0, y: 0, z: -140 },
       obstacles: [
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_MEDIUM, { x: -8, y: 1, z: 0 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_SMALL, { x: 8, y: 1, z: -30 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_MEDIUM, { x: -5, y: 1, z: -60 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_SMALL, { x: 12, y: 1, z: -90 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: 1, z: -120 })
+        // 0 a -50
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: -1, z: -25, size: [20, 2, 50] }),
+        // Gap de -50 a -70 (20u)
+        // -70 a -140 (70u)
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: -1, z: -105, size: [20, 2, 70] })
       ]
     }
   },
   
-  // === PATRONES MEDIOS ===
+  // === SEGMENTOS MEDIOS ===
   MEDIUM: {
-    'zigzag_course': {
-      name: 'Curso Zigzag',
+    'split_path': {
+      name: 'Camino Dividido',
       difficulty: 'medium',
-      description: 'Movimiento lateral continuo',
+      description: 'Dos caminos paralelos',
+      exitPoint: { x: 0, y: 0, z: -120 },
       obstacles: [
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_MEDIUM, { x: -15, y: 1, z: 0 }),
-        createObstacle(OBSTACLE_TEMPLATES.BOOST_PAD, { x: 0, y: 1, z: -25 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_MEDIUM, { x: 15, y: 2, z: -50 }),
-        createObstacle(OBSTACLE_TEMPLATES.SUPPLY_STATION, { x: -8, y: 2, z: -75 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_MEDIUM, { x: 8, y: 1, z: -100 })
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_MEDIUM, { x: -15, y: -1, z: -60, size: [15, 2, 120] }),
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_MEDIUM, { x: 15, y: -1, z: -60, size: [15, 2, 120] })
       ]
     },
     
-    'elevation_climb': {
-      name: 'Escalada de Elevación',
+    'step_sequence': {
+      name: 'Escaleras',
       difficulty: 'medium',
-      description: 'Ascenso gradual con variedad',
+      description: 'Serie de escalones',
+      // 3 escalones de 40u = 120u
+      exitPoint: { x: 0, y: 4, z: -120 },
       obstacles: [
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: 1, z: 0 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_MEDIUM, { x: -10, y: 2, z: -30 }, { type: 'STICKY' }),
-        createObstacle(OBSTACLE_TEMPLATES.BOOST_PAD, { x: 10, y: 3, z: -60 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_MEDIUM, { x: -5, y: 4, z: -90 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: 2, z: -120 })
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: -1, z: -20, size: [20, 2, 40] }),
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: 1, z: -60, size: [20, 2, 40] }),
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: 3, z: -100, size: [20, 2, 40] })
       ]
     },
     
-    'power_sequence': {
-      name: 'Secuencia de Poder',
+    'hazard_road': {
+      name: 'Camino Peligroso',
       difficulty: 'medium',
-      description: 'Combinación de efectos especiales',
+      description: 'Plataformas con zonas peligrosas',
+      // 3 plataformas de 40u = 120u
+      exitPoint: { x: 0, y: 0, z: -120 },
       obstacles: [
-        createObstacle(OBSTACLE_TEMPLATES.SUPPLY_STATION, { x: -12, y: 1, z: 0 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_MEDIUM, { x: 0, y: 1, z: -25 }, { type: 'SLIPPERY' }),
-        createObstacle(OBSTACLE_TEMPLATES.BOOST_PAD, { x: 12, y: 1, z: -50 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_MEDIUM, { x: -8, y: 2, z: -75 }, { type: 'STICKY' }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: 1, z: -100 })
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: -1, z: -20, size: [20, 2, 40] }),
+        createObstacle(OBSTACLE_TEMPLATES.DANGER_ZONE, { x: 0, y: 0.1, z: -60, size: [20, 1, 40] }), 
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: -1, z: -60, size: [20, 2, 40] }),
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: -1, z: -100, size: [20, 2, 40] })
       ]
     }
   },
   
-  // === PATRONES DIFÍCILES ===
+  // === SEGMENTOS DIFÍCILES ===
   HARD: {
-    'precision_spiral': {
-      name: 'Espiral de Precisión',
-      difficulty: 'hard',
-      description: 'Movimiento espiral desafiante',
-      obstacles: [
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_SMALL, { x: -18, y: 1, z: 0 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_SMALL, { x: 0, y: 3, z: -25 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_SMALL, { x: 18, y: 5, z: -50 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_SMALL, { x: 0, y: 3, z: -75 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_SMALL, { x: -18, y: 1, z: -100 })
-      ]
-    },
-    
-    'gauntlet_run': {
-      name: 'Carrera de Obstáculos',
-      difficulty: 'hard',
-      description: 'Múltiples desafíos consecutivos',
-      obstacles: [
-        createObstacle(OBSTACLE_TEMPLATES.DANGER_ZONE, { x: -15, y: 1, z: 0 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_SMALL, { x: 8, y: 3, z: -20 }, { type: 'SLIPPERY' }),
-        createObstacle(OBSTACLE_TEMPLATES.BOOST_PAD, { x: -8, y: 1, z: -45 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_SMALL, { x: 15, y: 4, z: -70 }, { type: 'BURNING' }),
-        createObstacle(OBSTACLE_TEMPLATES.SUPPLY_STATION, { x: 0, y: 2, z: -95 })
-      ]
-    },
-    
-    'floating_islands': {
+    'island_hops': {
       name: 'Islas Flotantes',
       difficulty: 'hard',
-      description: 'Saltos de larga distancia',
+      description: 'Saltos precisos entre islas',
+      // Ajuste de coordenadas para evitar gaps no intencionados
+      exitPoint: { x: 0, y: 0, z: -160 },
       obstacles: [
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_SMALL, { x: -20, y: 2, z: 0 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_SMALL, { x: 0, y: 4, z: -35 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_SMALL, { x: 20, y: 6, z: -70 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_SMALL, { x: -10, y: 3, z: -105 }),
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_MEDIUM, { x: 0, y: 1, z: -130 })
+        // 0 a -30
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_SMALL, { x: 0, y: -1, z: -15, size: [12, 2, 30] }),
+        // Gap 20u (-30 a -50)
+        // -50 a -80
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_SMALL, { x: -15, y: 1, z: -65, size: [12, 2, 30] }),
+        // Gap 20u (-80 a -100)
+        // -100 a -130
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_SMALL, { x: 15, y: 3, z: -115, size: [12, 2, 30] }),
+        // Gap 10u (-130 a -140)
+        // -140 a -150 (Landing pad)
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_SMALL, { x: 0, y: 1, z: -145, size: [12, 2, 10] }) 
+      ]
+    },
+    
+    'narrow_bridge': {
+      name: 'Puente Estrecho',
+      difficulty: 'hard',
+      description: 'Camino muy delgado',
+      // 20 + 80 + 20 = 120
+      exitPoint: { x: 0, y: 0, z: -120 },
+      obstacles: [
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: -1, z: -10, size: [20, 2, 20] }),
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_SMALL, { x: 0, y: -1, z: -60, size: [4, 2, 80] }), 
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: -1, z: -110, size: [20, 2, 20] })
       ]
     }
   }

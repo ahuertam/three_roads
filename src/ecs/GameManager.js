@@ -41,18 +41,24 @@ export class GameManager {
   
   initializeEntities() {
     this.shipEntity = EntityFactory.createShip(this.ecsManager);
+    
+    // Generar plataforma inicial segura
+    this.obstacleSpawnSystem.spawnInitialPlatform();
   }
   
   update(delta) {
     if (!this.isRunning) return;
     
-    this.gameStore.updateGameTime(delta);
+    // Acceder al estado actual y acciones
+    const state = this.gameStore.getState();
+    state.updateGameTime(delta);
+    
     this.ecsManager.update(delta);
     
     if (this.shipEntity) {
       const transform = this.shipEntity.getComponent('Transform');
       if (transform) {
-        this.gameStore.setShipPosition(transform.position);
+        state.setShipPosition(transform.position);
       }
     }
   }

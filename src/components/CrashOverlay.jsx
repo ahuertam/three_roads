@@ -7,7 +7,7 @@ function CrashOverlay() {
   const [showMessage, setShowMessage] = useState(false);
   
   useEffect(() => {
-    if (gameState === 'crashed') {
+    if (gameState === 'crashed' || gameState === 'gameover') {
       // Esperar 1 segundo antes de mostrar el mensaje
       const showTimer = setTimeout(() => {
         setShowMessage(true);
@@ -19,8 +19,12 @@ function CrashOverlay() {
           
           // Esperar 1 segundo antes de continuar
           setTimeout(() => {
-            continueAfterCrash();
-            restartGame(); // Refresca la página
+            if (gameState === 'gameover') {
+              restartGame();
+            } else {
+              continueAfterCrash();
+              restartGame(); // Refresca la página
+            }
           }, 1000);
         }
       };
@@ -36,9 +40,13 @@ function CrashOverlay() {
     }
   }, [gameState, continueAfterCrash, restartGame, showMessage]);
   
-  if (gameState !== 'crashed' || !showMessage) {
+  if ((gameState !== 'crashed' && gameState !== 'gameover') || !showMessage) {
     return null;
   }
+  
+  const isGameOver = gameState === 'gameover';
+  const title = isGameOver ? "¡Juego Terminado!" : "¡Te has estrellado!";
+  const borderColor = isGameOver ? "#ff0000" : "#ff4444";
   
   const overlayElement = (
     <div style={{
@@ -62,21 +70,21 @@ function CrashOverlay() {
         textAlign: 'center',
         fontSize: '28px',
         fontFamily: 'Arial, sans-serif',
-        border: '3px solid #ff4444',
-        boxShadow: '0 0 30px rgba(255, 68, 68, 0.5)',
+        border: `3px solid ${borderColor}`,
+        boxShadow: `0 0 30px ${borderColor}80`,
         maxWidth: '500px'
       }}>
         <h2 style={{ 
           margin: '0 0 20px 0', 
-          color: '#ff4444',
+          color: borderColor,
           fontSize: '36px',
           textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-        }}>¡Te has estrellado!</h2>
+        }}>{title}</h2>
         <p style={{ 
           margin: '20px 0', 
           fontSize: '22px',
           color: '#ffffff'
-        }}>Presiona SALTO para continuar</p>
+        }}>Presiona SALTO para {isGameOver ? "reiniciar" : "continuar"}</p>
         <div style={{ 
           fontSize: '16px', 
           color: '#ccc',
