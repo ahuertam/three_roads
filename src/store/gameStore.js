@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { LEVELS } from '../levels/index.js';
+
 const useGameStore = create((set, get) => ({
   shipPosition: [0, 2, -50], // Subir un poco para asegurar caída limpia sobre la plataforma
   initialZ: -50, // Posición Z inicial para calcular distancia
@@ -13,10 +15,11 @@ const useGameStore = create((set, get) => ({
       distanceTraveled: Math.floor(distanceFromStart)
     });
   },
-  gameState: 'playing', // 'playing', 'crashed', 'gameOver', 'menu'
+  gameState: 'playing', // 'playing', 'crashed', 'gameOver', 'menu', 'victory', 'levelComplete'
   score: 0,
   lives: 3,
-  level: 1,
+  levelIndex: 0, // Índice del nivel actual en el array LEVELS
+  currentLevel: LEVELS[0],
   speed: 1,
   gameTime: 0,
   onPlatform: false,
@@ -43,11 +46,34 @@ const useGameStore = create((set, get) => ({
     if (state.lives > 0) {
       set({ 
         gameState: 'playing',
-        shipPosition: [0, 0.5, -50],
+        shipPosition: [0, 2, -50],
         crashPosition: null
       });
     } else {
       set({ gameState: 'gameOver' });
+    }
+  },
+  
+  nextLevel: () => {
+    const state = get();
+    const nextIndex = state.levelIndex + 1;
+    
+    if (nextIndex < LEVELS.length) {
+      // Cargar siguiente nivel
+      set({
+        levelIndex: nextIndex,
+        currentLevel: LEVELS[nextIndex],
+        gameState: 'playing',
+        shipPosition: [0, 2, -50], // Reiniciar posición
+        initialZ: -50,
+        distanceTraveled: 0,
+        crashPosition: null
+        // Mantener score y vidas
+      });
+      // Importante: El ObstacleSpawnSystem detectará el cambio de nivel y reiniciará
+    } else {
+      // Victoria final
+      set({ gameState: 'victory' });
     }
   },
   
@@ -59,10 +85,11 @@ const useGameStore = create((set, get) => ({
     gameState: 'playing', 
     score: 0, 
     lives: 3, 
-    level: 1, 
+    levelIndex: 0,
+    currentLevel: LEVELS[0],
     speed: 1,
     gameTime: 0,
-    shipPosition: [0, 0.5, -50],
+    shipPosition: [0, 2, -50],
     initialZ: -50,
     distanceTraveled: 0,
     onPlatform: false,

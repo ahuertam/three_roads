@@ -78,10 +78,15 @@ export class CollisionSystem {
                 onPlatform = true;
                 
                 // Aplicar efecto de plataforma con rango más amplio
-                if (obstacle.platformType && distanceToTop <= 0.5) { // Cambiado de 0.2 a 0.5
-                  this.applyPlatformEffect(shipEffects, shipPhysics, obstacle.platformType);
+                // Usar el mismo rango que la detección de plataforma (2.0) para asegurar consistencia
+                if (obstacle.platformType && distanceToTop <= 2.0) { 
+                  // console.log('On platform type:', obstacle.platformType, 'Distance:', distanceToTop);
+                  this.applyPlatformEffect(ship, shipEffects, shipPhysics, obstacle.platformType);
                   this.gameStore.getState().setSupplies(shipEffects.getSuppliesPercentage());
                   this.gameStore.getState().setCurrentEffect(shipEffects.currentEffect);
+                } else if (obstacle.platformType === 'BURNING' && onPlatform) {
+                   // Fallback de seguridad para lava
+                   this.handleCrash(ship.getComponent(Transform).position);
                 }
               }
             }
@@ -117,7 +122,8 @@ export class CollisionSystem {
     });
   }
   
-  applyPlatformEffect(shipEffects, shipPhysics, platformType) {
+  applyPlatformEffect(ship, shipEffects, shipPhysics, platformType) {
+    // console.log('Applying effect:', platformType);
     switch(platformType) {
       case 'BOOST':
         shipEffects.applyEffect('boost');
@@ -129,7 +135,14 @@ export class CollisionSystem {
         shipEffects.applyEffect('slippery');
         break;
       case 'BURNING':
-        shipEffects.applyEffect('burning');
+        // Muerte instantánea al pisar lava
+        this.handleCrash(ship.getComponent(Transform).position);
+        break;
+      case 'GOAL':
+        // Nivel completado
+        console.log('GOAL REACHED!');
+        const { nextLevel } = this.gameStore.getState();
+        nextLevel();
         break;
       case 'SUPPLIES':
         shipEffects.applyEffect('supplies');
@@ -166,14 +179,8 @@ export class CollisionSystem {
   }
   
   handleBurningDamage(ship) {
-    // Reducir suministros o vida
-    const shipEffects = ship.getComponent(PlatformEffect);
-    if (shipEffects.supplies > 0) {
-      shipEffects.supplies = Math.max(0, shipEffects.supplies - 10);
-    } else {
-      // Si no hay suministros, causar daño real
-      this.handleCollision(ship, ship.getComponent(Transform).position);
-    }
+    // Muerte instantánea al tocar lava/fuego
+    this.handleCrash(ship.getComponent(Transform).position);
   }
   
   handleCollision(ship, position) {
@@ -236,21 +243,22 @@ export class CollisionSystem {
     const lateralDetectionZone = obstacleHeight * 0.3; // 30% de la altura del obstáculo
     
     // Verificar si la nave está en la zona de detección lateral (mitad del obstáculo)
-    const isInLateralZone = shipY >= (obstacleMiddleY - lateralDetectionZone) && 
-                           shipY <= (obstacleMiddleY + lateralDetectionZone);
+    // Aumentar la zona de detección vertical para cubrir casi toda la altura excepto la parte superior pisable
+    const isInLateralZone = shipY >= obstacleBox.minY && shipY < (obstacleBox.maxY - 0.5);
     
     if (isInLateralZone) {
       // Verificar si la nave está en el rango Z del obstáculo
       const isInObstacleZ = shipZ >= obstacleBox.minZ - 0.5 && shipZ <= obstacleBox.maxZ + 0.5;
       
       if (isInObstacleZ) {
-        // LÍNEA LATERAL IZQUIERDA - trazar línea horizontal en la mitad
+        // LÍNEA LATERAL IZQUIERDA
         const leftBoundary = obstacleBox.minX;
-        const isHittingLeftSide = shipX >= leftBoundary - 1.0 && shipX <= leftBoundary + 0.5;
+        // Aumentar rango de detección lateral
+        const isHittingLeftSide = shipX >= leftBoundary - 1.5 && shipX <= leftBoundary + 1.0;
         
-        // LÍNEA LATERAL DERECHA - trazar línea horizontal en la mitad  
+        // LÍNEA LATERAL DERECHA
         const rightBoundary = obstacleBox.maxX;
-        const isHittingRightSide = shipX >= rightBoundary - 0.5 && shipX <= rightBoundary + 1.0;
+        const isHittingRightSide = shipX >= rightBoundary - 1.0 && shipX <= rightBoundary + 1.5;
         
         // Colisión si cruza cualquiera de las líneas laterales
         if (isHittingLeftSide || isHittingRightSide) {

@@ -11,9 +11,51 @@ export class MovementSystem {
     this.gameStore = gameStore;
     this.baseSpeed = 5;
     this.groundHoverHeight = 0.6; // Altura de flotación sobre el suelo
+    this.lastLevelIndex = 0;
   }
   
   update(delta) {
+    const { levelIndex, shipPosition } = this.gameStore.getState();
+    
+    // Detectar cambio de nivel y resetear física
+    // O si la posición está desincronizada (failsafe)
+    let forceReset = false;
+    const physicsEntities = this.ecsManager.getEntitiesWithComponents([Transform, Physics]);
+    
+    if (physicsEntities.length > 0) {
+      const shipZ = physicsEntities[0].getComponent(Transform).position[2];
+      if (Math.abs(shipZ - shipPosition[2]) > 500) {
+        console.log('MovementSystem: Position desync detected! Force reset.');
+        forceReset = true;
+      }
+    }
+
+    if (this.lastLevelIndex !== levelIndex || forceReset) {
+      console.log('MovementSystem: Level change/Reset detected!', this.lastLevelIndex, '->', levelIndex);
+      console.log('Resetting ship to:', shipPosition);
+      
+      this.lastLevelIndex = levelIndex;
+      
+      physicsEntities.forEach(entity => {
+        const transform = entity.getComponent(Transform);
+        const physics = entity.getComponent(Physics);
+        
+        // Resetear posición y física
+        transform.position = [...shipPosition];
+        physics.velocity = { x: 0, y: 0, z: 0 };
+        physics.isGrounded = false;
+        
+        console.log('Entity reset to:', transform.position);
+        
+        // Resetear plataforma
+        const platform = entity.getComponent(Platform);
+        if (platform) {
+          platform.setOffPlatform();
+        }
+      });
+      return; // Saltar este frame para evitar movimientos erráticos
+    }
+
     const entities = this.ecsManager.getEntitiesWithComponents([Transform, Physics, Input]);
     
     entities.forEach(entity => {

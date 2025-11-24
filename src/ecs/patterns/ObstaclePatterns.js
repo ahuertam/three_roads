@@ -5,7 +5,9 @@ export const PLATFORM_TYPES = {
   BOOST: { color: '#32CD32', effect: 'boost', name: 'Impulso' },
   STICKY: { color: '#90EE90', effect: 'sticky', name: 'Pegajoso' },
   SLIPPERY: { color: '#FFA500', effect: 'slippery', name: 'Resbaladizo' },
-  BURNING: { color: '#FF6347', effect: 'burning', name: 'Ardiente' }
+  BURNING: { color: '#FF6347', effect: 'burning', name: 'Ardiente' },
+  GOAL: { color: '#FFD700', effect: 'goal', name: 'Meta' }, // Dorado
+  BLOCK: { color: '#8B4513', effect: 'none', name: 'Bloque' } // Marrón
 };
 
 // Plantillas de obstáculos reutilizables
@@ -23,7 +25,9 @@ export const OBSTACLE_TEMPLATES = {
   // Elementos especiales
   BOOST_PAD: { size: [10, 1, 15], type: 'BOOST' },
   SUPPLY_STATION: { size: [8, 2, 12], type: 'SUPPLIES' },
-  DANGER_ZONE: { size: [15, 1, 20], type: 'BURNING' }
+  DANGER_ZONE: { size: [15, 1, 20], type: 'BURNING' },
+  GOAL_LINE: { size: [40, 2, 50], type: 'GOAL' },
+  BLOCK: { size: [10, 8, 10], type: 'BLOCK' } // Obstáculo alto
 };
 
 // Función helper para crear obstáculos desde plantillas
@@ -157,6 +161,20 @@ export const PATTERN_LIBRARY = {
         createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: -1, z: -10, size: [20, 2, 20] }),
         createObstacle(OBSTACLE_TEMPLATES.PLATFORM_SMALL, { x: 0, y: -1, z: -60, size: [4, 2, 80] }), 
         createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: -1, z: -110, size: [20, 2, 20] })
+      ]
+    },
+
+    'block_field': {
+      name: 'Campo de Bloques',
+      difficulty: 'hard',
+      description: 'Obstáculos altos para esquivar',
+      exitPoint: { x: 0, y: 0, z: -100 },
+      obstacles: [
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: -1, z: -50, size: [20, 2, 100] }),
+        // Bloques altos que obligan a moverse lateralmente
+        createObstacle(OBSTACLE_TEMPLATES.BLOCK, { x: -5, y: 4, z: -30 }),
+        createObstacle(OBSTACLE_TEMPLATES.BLOCK, { x: 5, y: 4, z: -60 }),
+        createObstacle(OBSTACLE_TEMPLATES.BLOCK, { x: 0, y: 4, z: -90 })
       ]
     }
   }

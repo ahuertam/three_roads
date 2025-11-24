@@ -33,29 +33,53 @@ export class ObstacleSpawnSystem {
 
     // SISTEMA DE NIVELES
     this.currentLevel = LEVEL_1;
+    this.currentLevelIndex = 0;
     this.currentSegmentIndex = 0;
     this.processedSegments = levelLoader.parseLevel(this.currentLevel);
     this.isLevelComplete = false;
+    this.goalSpawned = false;
   }
-
+  
   update(delta) {
     // Acceder al estado actual
     const state = this.gameStore.getState();
-    const { gameState, shipPosition } = state;
-
+    const { gameState, shipPosition, currentLevel, levelIndex } = state;
+    
     if (gameState !== 'playing') return;
-
+    
+    // Detectar cambio de nivel
+    if (this.currentLevelIndex !== levelIndex) {
+      this.loadLevel(currentLevel, levelIndex);
+      return; // Esperar al siguiente frame para spawnear
+    }
+    
     // Generar nuevos segmentos si nos acercamos al final del último
     // La nave se mueve hacia Z negativo, así que verificamos si shipZ está cerca de nextSegmentStart.z
     const distanceToNextSpawn = Math.abs(shipPosition[2] - this.nextSegmentStart.z);
-
+    
     if (distanceToNextSpawn < this.spawnDistance) {
       this.spawnNextLevelSegment();
     }
-
+    
     this.cleanupOldObstacles();
   }
-
+  
+  loadLevel(levelData, index) {
+    console.log(`Loading Level ${index + 1}: ${levelData.name}`);
+    this.currentLevel = levelData;
+    this.currentLevelIndex = index;
+    this.currentSegmentIndex = 0;
+    this.processedSegments = levelLoader.parseLevel(levelData);
+    this.isLevelComplete = false;
+    this.goalSpawned = false;
+    
+    // Limpiar obstáculos antiguos
+    this.ecsManager.getEntitiesWithTag('obstacle').forEach(obs => obs.destroy());
+    
+    // Spawnear plataforma inicial para el nuevo nivel
+    this.spawnInitialPlatform();
+  }
+  
   spawnInitialPlatform() {
     // Generar una plataforma inicial segura y larga
     const initialPattern = {
@@ -68,37 +92,36 @@ export class ObstacleSpawnSystem {
         createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: -1, z: -100 }, { size: [20, 2, 200] })
       ]
     };
-
+    
     // Resetear el punto de inicio
     this.nextSegmentStart = { x: 0, y: 0, z: 0 };
-    this.currentSegmentIndex = 0; // Reiniciar índice de nivel
-    this.isLevelComplete = false;
-
+    
     this.spawnPatternData(initialPattern);
   }
-
+  
   spawnNextLevelSegment() {
     if (this.isLevelComplete) {
-      // Si el nivel terminó, generar infinito o loop
-      this.spawnAdaptivePattern(); // Fallback a generación aleatoria
+      if (!this.goalSpawned) {
+        this.spawnGoal();
+        this.goalSpawned = true;
+      }
       return;
     }
-
+    
     if (this.currentSegmentIndex >= this.processedSegments.length) {
-      console.log('Level Complete! Switching to endless mode.');
+      console.log('Level Segments Complete. Spawning Goal.');
       this.isLevelComplete = true;
       return;
     }
-
+    
     const segmentDef = this.processedSegments[this.currentSegmentIndex];
     let patternToSpawn = null;
-
+    
     if (segmentDef.obstacles) {
       // Es un segmento custom ya procesado (Grid)
       patternToSpawn = segmentDef;
     } else if (segmentDef.type) {
       // Es una referencia a un patrón de la librería
-      // Buscar en todas las dificultades
       const allPatterns = {
         ...PATTERN_LIBRARY.EASY,
         ...PATTERN_LIBRARY.MEDIUM,
@@ -106,15 +129,41 @@ export class ObstacleSpawnSystem {
       };
       patternToSpawn = allPatterns[segmentDef.type];
     }
-
+    
     if (patternToSpawn) {
       this.spawnPatternData(patternToSpawn);
       this.currentSegmentIndex++;
     } else {
       console.error(`Pattern type not found: ${segmentDef.type}`);
-      // Skip this segment to avoid stuck loop
       this.currentSegmentIndex++;
     }
+  }
+  
+  spawnGoal() {
+    const goalPattern = {
+      name: 'Level Goal',
+      obstacles: [
+        createObstacle(OBSTACLE_TEMPLATES.GOAL_LINE, { x: 0, y: 0.1, z: -20 }) // Un poco después del final
+      ]
+    };
+    
+    // Asegurar que haya suelo debajo de la meta
+    const platformUnderGoal = {
+      name: 'Goal Platform',
+      exitPoint: { x: 0, y: 0, z: -50 },
+      obstacles: [
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: -1, z: -25, size: [20, 2, 50] })
+      ]
+    };
+    
+    this.spawnPatternData(platformUnderGoal);
+    
+    // Spawnear la meta sobre la plataforma
+    // Ajustar Z manualmente porque spawnPatternData avanza nextSegmentStart
+    // Queremos la meta SOBRE la plataforma que acabamos de poner
+    // Retrocedemos el puntero para poner la meta
+    this.nextSegmentStart.z += 50; 
+    this.spawnPatternData(goalPattern);
   }
 
   spawnAdaptivePattern() {

@@ -14,7 +14,9 @@ function Obstacle({ ecsEntity }) {
     BOOST: { color: '#32CD32', effect: 'boost' },       // Verde
     STICKY: { color: '#90EE90', effect: 'sticky' },     // Verde claro
     SLIPPERY: { color: '#708090', effect: 'slippery' }, // Gris
-    BURNING: { color: '#FF6347', effect: 'burning' }    // Rojo/naranja
+    BURNING: { color: '#FF6347', effect: 'burning' },   // Rojo/naranja
+    GOAL: { color: '#FFD700', effect: 'goal' },          // Dorado
+    BLOCK: { color: '#8B4513', effect: 'none' }          // Marrón
   };
   
   useFrame(() => {
@@ -46,8 +48,8 @@ function Obstacle({ ecsEntity }) {
           color={platformConfig.color}
           metalness={platformType === 'BURNING' ? 0.8 : 0.3}
           roughness={platformType === 'SLIPPERY' ? 0.1 : 0.7}
-          emissive={platformType === 'BURNING' ? '#FF2000' : '#000000'}
-          emissiveIntensity={platformType === 'BURNING' ? 0.3 : 0}
+          emissive={platformType === 'BURNING' ? '#FF2000' : (platformType === 'GOAL' ? '#FFD700' : '#000000')}
+          emissiveIntensity={platformType === 'BURNING' ? 0.3 : (platformType === 'GOAL' ? 0.5 : 0)}
         />
       </mesh>
       
