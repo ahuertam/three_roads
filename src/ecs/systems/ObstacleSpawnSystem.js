@@ -156,12 +156,12 @@ export class ObstacleSpawnSystem {
       ]
     };
     
-    // Asegurar que haya suelo debajo de la meta
+    // Asegurar que haya suelo debajo de la meta - PLATAFORMA LARGA para evitar que desaparezca
     const platformUnderGoal = {
       name: 'Goal Platform',
-      exitPoint: { x: 0, y: 0, z: -50 },
+      exitPoint: { x: 0, y: 0, z: -200 }, // Plataforma de 200 unidades
       obstacles: [
-        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: -1, z: -25, size: [20, 2, 50] })
+        createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, { x: 0, y: -1, z: -100, size: [20, 2, 200] })
       ]
     };
     
@@ -170,8 +170,8 @@ export class ObstacleSpawnSystem {
     // Spawnear la meta sobre la plataforma
     // Ajustar Z manualmente porque spawnPatternData avanza nextSegmentStart
     // Queremos la meta SOBRE la plataforma que acabamos de poner
-    // Retrocedemos el puntero para poner la meta
-    this.nextSegmentStart.z += 50; 
+    // Retrocedemos el puntero para poner la meta cerca del inicio de la plataforma
+    this.nextSegmentStart.z += 180; // Ajustado para plataforma de 200 unidades 
     this.spawnPatternData(goalPattern);
   }
 
