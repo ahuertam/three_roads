@@ -6,10 +6,11 @@ import { PlatformEffect } from '../components/PlatformEffect.js';
 import { audioSystem } from './AudioSystem.js';
 
 export class MovementSystem {
-  constructor(ecsManager, gameStore) {
+  constructor(ecsManager, gameStore, particleSystem = null) {
     this.ecsManager = ecsManager;
     this.gameStore = gameStore;
-    this.baseSpeed = 5;
+    this.particleSystem = particleSystem;
+    this.baseSpeed = 0; // Velocidad inicial 0
     this.groundHoverHeight = 0.6; // Altura de flotación sobre el suelo
     this.lastLevelIndex = 0;
   }
@@ -112,9 +113,14 @@ export class MovementSystem {
         this.baseSpeed = Math.max(this.baseSpeed * 0.95, 3);
       }
     } else if (input.keys.backward) {
-      this.baseSpeed = Math.max(this.baseSpeed - input.accelerationSpeed * delta, 2);
+      this.baseSpeed = Math.max(this.baseSpeed - input.accelerationSpeed * delta, 0); // Permitir frenar hasta 0
     } else {
-      this.baseSpeed = Math.max(this.baseSpeed * 0.99, 6); // Velocidad base aumentada de 5 a 6
+      // Deceleración natural si no se pulsa nada
+      if (this.baseSpeed > 0) {
+        this.baseSpeed = Math.max(this.baseSpeed * 0.95, 0);
+        // Si es muy baja, detener completamente
+        if (this.baseSpeed < 0.1) this.baseSpeed = 0;
+      }
     }
     
     physics.velocity.z = -this.baseSpeed;
@@ -234,7 +240,14 @@ export class MovementSystem {
       // Solo actualizar si no estamos ya en gameover para evitar bucles
       if (currentState.gameState === 'playing') {
         console.log('Player fell into void');
-        currentState.setGameState('gameover');
+        
+        // Crear explosión si el sistema de partículas está disponible
+        if (this.particleSystem) {
+          this.particleSystem.createExplosion(transform.position, 30);
+        }
+        
+        // Usar handleCollision para manejar la muerte consistentemente (vidas, crash screen)
+        currentState.handleCollision(transform.position);
         
         // Detener la nave para que no siga cayendo infinitamente
         physics.velocity.x = 0;

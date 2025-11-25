@@ -2,12 +2,34 @@ import React from 'react';
 import useGameStore from '../store/gameStore';
 
 function HUD() {
-  const { distanceTraveled, gameState, supplies, currentEffect } = useGameStore();
+  const { distanceTraveled, gameState, supplies, currentEffect, currentLevel, levelIndex } = useGameStore();
   
   if (gameState !== 'playing') return null;
   
   return (
     <>
+      {/* Nombre del Nivel (Arriba Centro) */}
+      <div style={{
+        position: 'fixed',
+        top: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        color: '#00ff00',
+        padding: '10px 30px',
+        borderRadius: '20px',
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '24px',
+        fontWeight: 'bold',
+        border: '2px solid #00ff00',
+        boxShadow: '0 0 15px rgba(0, 255, 0, 0.4)',
+        zIndex: 1000,
+        textTransform: 'uppercase',
+        letterSpacing: '2px'
+      }}>
+        LEVEL {levelIndex + 1}: {currentLevel?.name || 'Unknown'}
+      </div>
+
       {/* HUD principal (esquina inferior derecha) */}
       <div style={{
         position: 'fixed',

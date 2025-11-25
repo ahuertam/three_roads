@@ -6,8 +6,18 @@ const useGameStore = create((set, get) => ({
   shipPosition: [0, 2, -50], // Subir un poco para asegurar caída limpia sobre la plataforma
   initialZ: -50, // Posición Z inicial para calcular distancia
   distanceTraveled: 0, // Nueva propiedad para metros recorridos
+  justLoadedLevel: false, // Flag para evitar condiciones de carrera en el reset
   setShipPosition: (position) => {
     const state = get();
+    
+    // Si acabamos de cargar nivel, ignorar la primera actualización de posición
+    // que viene del frame anterior para evitar que la nave vuelva a la posición vieja
+    if (state.justLoadedLevel) {
+      console.log('GameStore: Ignoring stale position update after level load');
+      set({ justLoadedLevel: false });
+      return;
+    }
+    
     // Calcular distancia recorrida basada en movimiento en Z
     const distanceFromStart = Math.abs(position[2] - state.initialZ);
     set({ 
@@ -67,7 +77,8 @@ const useGameStore = create((set, get) => ({
         shipPosition: [0, 2, -50], // Reiniciar posición
         initialZ: -50,
         distanceTraveled: 0,
-        crashPosition: null
+        crashPosition: null,
+        justLoadedLevel: true // Activar flag para proteger la posición
         // Mantener score y vidas
       });
       // Importante: El ObstacleSpawnSystem detectará el cambio de nivel y reiniciará
