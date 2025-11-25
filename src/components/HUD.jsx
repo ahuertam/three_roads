@@ -141,130 +141,110 @@ function HUD() {
         )}
       </div>
 
-      {/* Leyenda de colores de plataformas (esquina inferior izquierda) */}
+      {/* Leyenda e instrucciones (esquina inferior izquierda) */}
       <div style={{
         position: 'fixed',
         bottom: '20px',
         left: '20px',
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        color: 'white',
-        padding: '15px',
-        borderRadius: '10px',
-        fontFamily: 'Arial, sans-serif',
-        fontSize: '12px',
-        border: '2px solid #444',
-        boxShadow: '0 0 10px rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        gap: '10px',
+        alignItems: 'flex-start',
         zIndex: 1000
       }}>
+        {/* Leyenda de colores de plataformas */}
         <div style={{
-          color: '#FFD700',
-          fontSize: '14px',
-          fontWeight: 'bold',
-          marginBottom: '10px',
-          textAlign: 'center'
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          color: 'white',
+          padding: '15px',
+          borderRadius: '10px',
+          fontFamily: 'Arial, sans-serif',
+          fontSize: '12px',
+          border: '2px solid #444',
+          boxShadow: '0 0 10px rgba(0, 0, 0, 0.5)'
         }}>
-          PLATAFORMAS
+          <div style={{
+            color: '#FFD700',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            marginBottom: '10px',
+            textAlign: 'center'
+          }}>
+            PLATAFORMAS
+          </div>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px'
+          }}>
+            {/* Plataforma Normal */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '16px', height: '16px', backgroundColor: '#666666', borderRadius: '3px', border: '1px solid #888' }} />
+              <span>Normal</span>
+            </div>
+            {/* Plataforma de Suministros */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '16px', height: '16px', backgroundColor: '#87CEEB', borderRadius: '3px', border: '1px solid #5F9EA0' }} />
+              <span>Suministros</span>
+            </div>
+            {/* Plataforma de Impulso */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '16px', height: '16px', backgroundColor: '#32CD32', borderRadius: '3px', border: '1px solid #228B22' }} />
+              <span>Impulso</span>
+            </div>
+            {/* Plataforma Pegajosa */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '16px', height: '16px', backgroundColor: '#90EE90', borderRadius: '3px', border: '1px solid #98FB98' }} />
+              <span>Pegajosa</span>
+            </div>
+            {/* Plataforma Resbaladiza */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '16px', height: '16px', backgroundColor: '#FFA500', borderRadius: '3px', border: '1px solid #FF8C00' }} />
+              <span>Resbaladiza</span>
+            </div>
+            {/* Plataforma Ardiente */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '16px', height: '16px', backgroundColor: '#FF6347', borderRadius: '3px', border: '1px solid #DC143C' }} />
+              <span>Ardiente</span>
+            </div>
+          </div>
         </div>
-        
+
+        {/* Panel de controles */}
         <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '6px'
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          color: 'white',
+          padding: '15px',
+          borderRadius: '10px',
+          fontFamily: 'Arial, sans-serif',
+          fontSize: '12px',
+          border: '2px solid #444',
+          boxShadow: '0 0 10px rgba(0, 0, 0, 0.5)'
         }}>
-          {/* Plataforma Normal */}
           <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
+            color: '#FFD700',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            marginBottom: '10px',
+            textAlign: 'center'
           }}>
-            <div style={{
-              width: '16px',
-              height: '16px',
-              backgroundColor: '#666666',
-              borderRadius: '3px',
-              border: '1px solid #888'
-            }} />
-            <span>Normal</span>
+            CONTROLES
           </div>
-          
-          {/* Plataforma de Suministros */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <div style={{
-              width: '16px',
-              height: '16px',
-              backgroundColor: '#87CEEB',
-              borderRadius: '3px',
-              border: '1px solid #5F9EA0'
-            }} />
-            <span>Suministros</span>
-          </div>
-          
-          {/* Plataforma de Impulso */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <div style={{
-              width: '16px',
-              height: '16px',
-              backgroundColor: '#32CD32',
-              borderRadius: '3px',
-              border: '1px solid #228B22'
-            }} />
-            <span>Impulso</span>
-          </div>
-          
-          {/* Plataforma Pegajosa */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <div style={{
-              width: '16px',
-              height: '16px',
-              backgroundColor: '#90EE90',
-              borderRadius: '3px',
-              border: '1px solid #98FB98'
-            }} />
-            <span>Pegajosa</span>
-          </div>
-          
-          {/* Plataforma Resbaladiza */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <div style={{
-              width: '16px',
-              height: '16px',
-              backgroundColor: '#FFA500',
-              borderRadius: '3px',
-              border: '1px solid #FF8C00'
-            }} />
-            <span>Resbaladiza</span>
-          </div>
-          
-          {/* Plataforma Ardiente */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <div style={{
-              width: '16px',
-              height: '16px',
-              backgroundColor: '#FF6347',
-              borderRadius: '3px',
-              border: '1px solid #DC143C'
-            }} />
-            <span>Ardiente</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ color: '#87CEEB', fontWeight: 'bold' }}>Mover:</span>
+              <span style={{
+                display: 'inline-flex', gap: '6px'
+              }}>
+                <span style={{ background: '#222', border: '1px solid #555', borderRadius: '4px', padding: '2px 6px' }}>W</span>
+                <span style={{ background: '#222', border: '1px solid #555', borderRadius: '4px', padding: '2px 6px' }}>A</span>
+                <span style={{ background: '#222', border: '1px solid #555', borderRadius: '4px', padding: '2px 6px' }}>S</span>
+                <span style={{ background: '#222', border: '1px solid #555', borderRadius: '4px', padding: '2px 6px' }}>D</span>
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ color: '#32CD32', fontWeight: 'bold' }}>Saltar:</span>
+              <span style={{ background: '#222', border: '1px solid #555', borderRadius: '4px', padding: '2px 8px' }}>ESPACIO</span>
+            </div>
           </div>
         </div>
       </div>
