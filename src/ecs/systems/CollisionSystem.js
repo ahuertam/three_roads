@@ -157,14 +157,14 @@ export class CollisionSystem {
       shipPhysics.velocity.z *= 1.5;
     }
     
-    // Sticky: reduce velocidad lateral
+    // Sticky: reduce velocidad lateral DRÁSTICAMENTE (80% de reducción)
     if (shipEffects.isEffectActive('sticky')) {
-      shipPhysics.velocity.x *= 0.5;
+      shipPhysics.velocity.x *= 0.2; // Cambiado de 0.5 a 0.2 para efecto mucho más fuerte
     }
     
-    // Slippery: reduce fricción y mejora el deslizamiento
+    // Slippery: reduce fricción mucho más para deslizamiento notorio
     if (shipEffects.isEffectActive('slippery')) {
-      shipPhysics.friction = 0.98; // Cambiado de 0.95 a 0.98 para mejor control
+      shipPhysics.friction = 0.99; // Cambiado de 0.98 a 0.99 para mejor control
       // Reducir velocidad lateral gradualmente para evitar colisiones bruscas
       if (Math.abs(shipPhysics.velocity.x) > 8) {
         shipPhysics.velocity.x *= 0.95;

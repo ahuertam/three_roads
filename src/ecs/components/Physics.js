@@ -8,8 +8,8 @@ export class Physics {
     this.isGrounded = false;
     this.bounceVelocity = 0;
     this.bounceCount = 0;
-    this.maxBounces = 5; // Aumentado de 4 a 5
+    this.maxBounces = 6; // Aumentado de 5 a 6
     this.airResistance = 0.98; // Aumentado de 0.96 a 0.98 para menos pérdida
-    this.bounceIntensity = 0.55; // Aumentado de 0.45 a 0.55
+    this.bounceIntensity = 0.8; // Aumentado de 0.55 a 0.8 para rebote más visible
   }
 }

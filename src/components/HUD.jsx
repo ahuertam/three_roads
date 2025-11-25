@@ -2,7 +2,15 @@ import React from 'react';
 import useGameStore from '../store/gameStore';
 
 function HUD() {
-  const { distanceTraveled, gameState, supplies, currentEffect, currentLevel, levelIndex, maxScore } = useGameStore();
+  const distanceTraveled = useGameStore(s => s.distanceTraveled);
+  const gameState = useGameStore(s => s.gameState);
+  const supplies = useGameStore(s => s.supplies);
+  const currentEffect = useGameStore(s => s.currentEffect);
+  const currentLevel = useGameStore(s => s.currentLevel);
+  const levelIndex = useGameStore(s => s.levelIndex);
+  const highScores = useGameStore(s => s.highScores);
+  const currentLevelId = currentLevel?.id || 'unknown';
+  const currentHighScore = highScores[currentLevelId] || 0;
   
   if (gameState !== 'playing') return null;
   
@@ -34,7 +42,7 @@ function HUD() {
           color: '#ffffff',
           fontWeight: 'normal',
         }}>
-          MEJOR: {maxScore || 0}m
+          MEJOR: {currentHighScore}m
         </div>
       </div>
 

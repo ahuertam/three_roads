@@ -84,9 +84,18 @@ export class MovementSystem {
   }
   
   handleInput(input, physics, platform, platformEffect, delta) {
-    // Verificar si está bajo efecto slippery
+    // Verificar si está bajo efecto slippery o sticky
     const isSlippery = platformEffect.isEffectActive('slippery');
-    const lateralMultiplier = isSlippery ? 0.7 : 1.0; // Reducir control lateral cuando es slippery
+    const isSticky = platformEffect.isEffectActive('sticky');
+    
+    // Slippery: control lateral muy reducido (40% de control)
+    // Sticky: control lateral también reducido por la pegajosidad (60% de control)
+    let lateralMultiplier = 1.0;
+    if (isSlippery) {
+      lateralMultiplier = 0.4; // Reducido de 0.7 a 0.4 para efecto mucho más notorio
+    } else if (isSticky) {
+      lateralMultiplier = 0.6; // Nuevo: sticky también reduce control lateral
+    }
     
     // Movimiento lateral
     if (input.keys.left) {
@@ -94,8 +103,13 @@ export class MovementSystem {
     } else if (input.keys.right) {
       physics.velocity.x = input.lateralSpeed * lateralMultiplier;
     } else {
-      // Aplicar fricción más gradual cuando es slippery
-      const frictionRate = isSlippery ? 0.98 : physics.friction;
+      // Aplicar fricción más gradual cuando es slippery o sticky
+      let frictionRate = physics.friction;
+      if (isSlippery) {
+        frictionRate = 0.99; // Aumentado de 0.98 a 0.99 para deslizamiento mucho más largo
+      } else if (isSticky) {
+        frictionRate = 0.70; // Nuevo: sticky detiene muy rápido
+      }
       physics.velocity.x *= frictionRate;
     }
     
@@ -143,23 +157,7 @@ export class MovementSystem {
       audioSystem.playJumpSound(jumpMultiplier);
     }
     
-    // En el método updatePosition, donde está el rebote:
-    if (physics.velocity.y < -1.5 && physics.bounceCount < physics.maxBounces) {
-      const impactVelocity = Math.abs(physics.velocity.y);
-      physics.bounceVelocity = impactVelocity * physics.bounceIntensity;
-      physics.bounceCount++;
-      
-      physics.bounceVelocity = Math.min(physics.bounceVelocity, 12);
-      
-      if (physics.bounceCount === 1) {
-        physics.bounceVelocity *= 1.2;
-      }
-      
-      // REPRODUCIR SONIDO DE REBOTE
-      console.log('Intentando reproducir sonido de rebote');
-      const bounceIntensity = Math.min(1.0, impactVelocity / 15);
-      audioSystem.playBounceSound(bounceIntensity, physics.bounceCount);
-    }
+    // Logic removed: Misplaced bounce code that triggered in mid-air
   }
   
   applyPhysics(transform, physics, platform, delta) {
@@ -216,17 +214,18 @@ export class MovementSystem {
       // Estabilizar la nave cuando está flotando
       if (Math.abs(transform.position[1] - targetY) < 0.2) {
         physics.velocity.y = Math.max(0, physics.velocity.y * 0.8);
+        physics.bounceCount = 0; // Reset bounce count when stable
       }
       
       // EFECTO REBOTE cuando la nave aterriza en la plataforma desde arriba
       if (physics.velocity.y < -2.0 && transform.position[1] <= targetY + 0.5) {
         const impactVelocity = Math.abs(physics.velocity.y);
         physics.bounceVelocity = impactVelocity * 0.4; // Rebote suave en plataformas
-        physics.bounceCount = 1;
+        physics.bounceCount++;
         physics.velocity.y = 0;
         
         // Sonido de aterrizaje suave - CORREGIDO
-        audioSystem.playBounceSound(0.3, 1);
+        audioSystem.playBounceSound(0.3, physics.bounceCount);
       }
     }
     

@@ -25,11 +25,11 @@ export class AudioSystem {
   async loadSounds() {
     if (!this.soundEnabled) return;
     
-    // CORREGIDO: Rutas correctas para archivos en public
+    const base = process.env.PUBLIC_URL || '';
     const soundFiles = {
-      jump: '/sounds/cartoon-jump-6462.mp3',
-      bounce: '/sounds/rubberballbouncing-251948.mp3',
-      explosion: '/sounds/explosion.mp3'
+      jump: `${base}/sounds/cartoon-jump-6462.mp3`,
+      bounce: `${base}/sounds/rubberballbouncing-251948.mp3`,
+      explosion: `${base}/sounds/explosion.mp3`
     };
     
     for (const [name, path] of Object.entries(soundFiles)) {
@@ -126,7 +126,8 @@ export class AudioSystem {
   loadMusic() {
     if (!this.soundEnabled) return;
     try {
-      this.musicAudio = new Audio('/sounds/Galaxias Perdidas.mp3');
+      const base = process.env.PUBLIC_URL || '';
+      this.musicAudio = new Audio(`${base}/sounds/Galaxias Perdidas.mp3`);
       this.musicAudio.preload = 'auto';
       this.musicAudio.loop = true;
       this.musicAudio.volume = Math.min(1.0, this.masterVolume * 0.25);

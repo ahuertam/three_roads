@@ -1,10 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import useGameStore from '../store/gameStore';
 import { LEVELS } from '../levels/index';
 
+const LEVELS_PER_PAGE = 6;
+
 function LevelSelector() {
-  const { gameState, startLevel } = useGameStore();
+  const { gameState, startLevel, highScores } = useGameStore();
+  const [currentPage, setCurrentPage] = useState(0);
+  
   if (gameState !== 'menu') return null;
+
+  const totalPages = Math.ceil(LEVELS.length / LEVELS_PER_PAGE);
+  const startIdx = currentPage * LEVELS_PER_PAGE;
+  const endIdx = Math.min(startIdx + LEVELS_PER_PAGE, LEVELS.length);
+  const currentLevels = LEVELS.slice(startIdx, endIdx);
+
+  const goToPreviousPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages - 1) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
 
   return (
     <div style={{
@@ -29,7 +50,7 @@ function LevelSelector() {
         fontFamily: 'Arial, sans-serif',
         border: '3px solid #00ff00',
         boxShadow: '0 0 30px #00ff0080',
-        maxWidth: '600px',
+        maxWidth: '650px',
         width: '90%'
       }}>
         <h2 style={{
@@ -39,34 +60,134 @@ function LevelSelector() {
           textTransform: 'uppercase',
           letterSpacing: '2px'
         }}>Selecciona nivel</h2>
+        
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '12px'
+          gap: '12px',
+          marginBottom: '20px'
         }}>
-          {LEVELS.map((lvl, idx) => (
-            <button
-              key={lvl.id || idx}
-              onClick={() => startLevel(idx)}
-              style={{
-                backgroundColor: '#111',
-                color: '#fff',
-                border: '2px solid #444',
-                borderRadius: '10px',
-                padding: '14px',
-                cursor: 'pointer',
-                boxShadow: '0 0 10px rgba(0,0,0,0.5)'
-              }}
-            >
-              <div style={{
-                fontSize: '14px',
-                color: '#00ff00',
-                marginBottom: '6px',
-                fontWeight: 'bold'
-              }}>LEVEL {idx + 1}</div>
-              <div style={{ fontSize: '18px' }}>{lvl.name || 'Sin título'}</div>
-            </button>
-          ))}
+          {currentLevels.map((lvl, idx) => {
+            const globalIdx = startIdx + idx;
+            return (
+              <button
+                key={lvl.id || globalIdx}
+                onClick={() => startLevel(globalIdx)}
+                style={{
+                  backgroundColor: '#111',
+                  color: '#fff',
+                  border: '2px solid #444',
+                  borderRadius: '10px',
+                  padding: '14px',
+                  cursor: 'pointer',
+                  boxShadow: '0 0 10px rgba(0,0,0,0.5)',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#222';
+                  e.currentTarget.style.borderColor = '#00ff00';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#111';
+                  e.currentTarget.style.borderColor = '#444';
+                }}
+              >
+                <div style={{
+                  fontSize: '14px',
+                  color: '#00ff00',
+                  marginBottom: '6px',
+                  fontWeight: 'bold'
+                }}>LEVEL {globalIdx + 1}</div>
+                <div style={{ fontSize: '18px' }}>{lvl.name || 'Sin título'}</div>
+                <div style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
+                  High Score: {highScores[lvl.id] || 0}m
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Pagination Controls */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '20px',
+          marginTop: '20px'
+        }}>
+          {/* Previous Button */}
+          <button
+            onClick={goToPreviousPage}
+            disabled={currentPage === 0}
+            style={{
+              backgroundColor: currentPage === 0 ? '#333' : '#111',
+              color: currentPage === 0 ? '#666' : '#00ff00',
+              border: `2px solid ${currentPage === 0 ? '#555' : '#00ff00'}`,
+              borderRadius: '8px',
+              padding: '10px 20px',
+              cursor: currentPage === 0 ? 'not-allowed' : 'pointer',
+              fontSize: '20px',
+              fontWeight: 'bold',
+              transition: 'all 0.2s ease',
+              opacity: currentPage === 0 ? 0.5 : 1
+            }}
+            onMouseEnter={(e) => {
+              if (currentPage > 0) {
+                e.currentTarget.style.backgroundColor = '#00ff00';
+                e.currentTarget.style.color = '#000';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (currentPage > 0) {
+                e.currentTarget.style.backgroundColor = '#111';
+                e.currentTarget.style.color = '#00ff00';
+              }
+            }}
+          >
+            ◀
+          </button>
+
+          {/* Page Indicator */}
+          <div style={{
+            color: '#00ff00',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            minWidth: '80px'
+          }}>
+            {currentPage + 1} / {totalPages}
+          </div>
+
+          {/* Next Button */}
+          <button
+            onClick={goToNextPage}
+            disabled={currentPage >= totalPages - 1}
+            style={{
+              backgroundColor: currentPage >= totalPages - 1 ? '#333' : '#111',
+              color: currentPage >= totalPages - 1 ? '#666' : '#00ff00',
+              border: `2px solid ${currentPage >= totalPages - 1 ? '#555' : '#00ff00'}`,
+              borderRadius: '8px',
+              padding: '10px 20px',
+              cursor: currentPage >= totalPages - 1 ? 'not-allowed' : 'pointer',
+              fontSize: '20px',
+              fontWeight: 'bold',
+              transition: 'all 0.2s ease',
+              opacity: currentPage >= totalPages - 1 ? 0.5 : 1
+            }}
+            onMouseEnter={(e) => {
+              if (currentPage < totalPages - 1) {
+                e.currentTarget.style.backgroundColor = '#00ff00';
+                e.currentTarget.style.color = '#000';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (currentPage < totalPages - 1) {
+                e.currentTarget.style.backgroundColor = '#111';
+                e.currentTarget.style.color = '#00ff00';
+              }
+            }}
+          >
+            ▶
+          </button>
         </div>
       </div>
     </div>
