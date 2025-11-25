@@ -2,6 +2,7 @@ import React from 'react';
 import { Canvas } from '@react-three/fiber';
 import Game from './components/Game';
 import CrashOverlay from './components/CrashOverlay';
+import LevelSelector from './components/LevelSelector';
 import HUD from './components/HUD';
 import './App.css';
 import { audioSystem } from './ecs/systems/AudioSystem';
@@ -76,6 +77,7 @@ function App() {
         </button>
       </div>
 
+      <LevelSelector />
       <HUD />
       <CrashOverlay />
     </div>

@@ -33,7 +33,7 @@ const useGameStore = create((set, get) => ({
       distanceTraveled: Math.floor(distanceFromStart)
     });
   },
-  gameState: 'playing', // 'playing', 'crashed', 'gameOver', 'menu', 'victory', 'levelComplete'
+  gameState: 'menu', // 'playing', 'crashed', 'gameOver', 'menu', 'victory', 'levelComplete'
   score: 0,
   lives: 3,
   levelIndex: 0, // Índice del nivel actual en el array LEVELS
@@ -130,6 +130,26 @@ const useGameStore = create((set, get) => ({
     platformHeight: 0,
     crashPosition: null
   }),
+  
+  startLevel: (index) => {
+    const i = Math.max(0, Math.min(index ?? 0, LEVELS.length - 1));
+    set({
+      gameState: 'playing',
+      score: 0,
+      lives: 3,
+      levelIndex: i,
+      currentLevel: LEVELS[i],
+      speed: 1,
+      gameTime: 0,
+      shipPosition: [0, 2, -50],
+      initialZ: -50,
+      distanceTraveled: 0,
+      onPlatform: false,
+      platformHeight: 0,
+      crashPosition: null,
+      justLoadedLevel: true
+    });
+  },
   
   resetToMenu: () => set({ gameState: 'menu' }),
   supplies: 100,
