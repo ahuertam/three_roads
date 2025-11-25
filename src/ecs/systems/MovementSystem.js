@@ -203,7 +203,7 @@ export class MovementSystem {
     
     // NUEVO: Hacer que la nave flote por encima de las plataformas
     if (platform?.isOnPlatform) {
-      const floatHeight = 1.5; // Altura de flotación por encima de la plataforma
+      const floatHeight = 0.8; // Altura de flotación reducida para mejor contacto visual
       const targetY = platform.platformHeight + floatHeight;
       
       // Ajustar suavemente la posición Y para flotar

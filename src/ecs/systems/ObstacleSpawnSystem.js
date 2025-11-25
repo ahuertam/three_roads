@@ -52,6 +52,15 @@ export class ObstacleSpawnSystem {
       this.loadLevel(currentLevel, levelIndex);
       return; // Esperar al siguiente frame para spawnear
     }
+
+    // Detectar reinicio de posición (Respawn tras muerte) via flag explícito
+    if (state.resetLevelGeneration) {
+      console.log('Respawn flag detected! Resetting level generation.');
+      this.loadLevel(currentLevel, levelIndex);
+      // Consumir el flag
+      this.gameStore.getState().setResetLevelGeneration(false);
+      return;
+    }
     
     // Generar nuevos segmentos si nos acercamos al final del último
     // La nave se mueve hacia Z negativo, así que verificamos si shipZ está cerca de nextSegmentStart.z

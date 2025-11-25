@@ -15,6 +15,7 @@ const useGameStore = create((set, get) => ({
     }
   })(),
   justLoadedLevel: false, // Flag para evitar condiciones de carrera en el reset
+  resetLevelGeneration: false, // Flag para forzar regeneración de nivel (fix flickering)
   setShipPosition: (position) => {
     const state = get();
     
@@ -90,7 +91,8 @@ const useGameStore = create((set, get) => ({
       set({ 
         gameState: 'playing',
         shipPosition: [0, 2, -50],
-        crashPosition: null
+        crashPosition: null,
+        resetLevelGeneration: true // Señal para ObstacleSpawnSystem
       });
     } else {
       set({ gameState: 'gameOver' });
@@ -169,6 +171,7 @@ const useGameStore = create((set, get) => ({
   setSupplies: (supplies) => set({ supplies }),
   setCurrentEffect: (effect) => set({ currentEffect: effect }),
   setGameState: (state) => set({ gameState: state }),
+  setResetLevelGeneration: (value) => set({ resetLevelGeneration: value }),
 }));
 
 export default useGameStore;
