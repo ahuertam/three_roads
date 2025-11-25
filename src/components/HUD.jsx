@@ -2,7 +2,7 @@ import React from 'react';
 import useGameStore from '../store/gameStore';
 
 function HUD() {
-  const { distanceTraveled, gameState, supplies, currentEffect, currentLevel, levelIndex } = useGameStore();
+  const { distanceTraveled, gameState, supplies, currentEffect, currentLevel, levelIndex, maxScore } = useGameStore();
   
   if (gameState !== 'playing') return null;
   
@@ -28,6 +28,14 @@ function HUD() {
         letterSpacing: '2px'
       }}>
         LEVEL {levelIndex + 1}: {currentLevel?.name || 'Unknown'}
+        <div style={{
+          marginTop: '6px',
+          fontSize: '14px',
+          color: '#ffffff',
+          fontWeight: 'normal',
+        }}>
+          MEJOR: {maxScore || 0}m
+        </div>
       </div>
 
       {/* HUD principal (esquina inferior derecha) */}

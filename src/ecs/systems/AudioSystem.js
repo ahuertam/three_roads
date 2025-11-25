@@ -4,6 +4,7 @@ export class AudioSystem {
     this.audioContext = null;
     this.masterVolume = 0.5;
     this.soundEnabled = true;
+    this.musicEnabled = true;
     
     // Inicializar contexto de audio
     this.initAudioContext();
@@ -27,7 +28,8 @@ export class AudioSystem {
     // CORREGIDO: Rutas correctas para archivos en public
     const soundFiles = {
       jump: '/sounds/cartoon-jump-6462.mp3',
-      bounce: '/sounds/rubberballbouncing-251948.mp3'
+      bounce: '/sounds/rubberballbouncing-251948.mp3',
+      explosion: '/sounds/explosion.mp3'
     };
     
     for (const [name, path] of Object.entries(soundFiles)) {
@@ -95,6 +97,10 @@ export class AudioSystem {
         audio.volume = this.masterVolume;
       });
     }
+
+    if (this.musicAudio) {
+      this.musicAudio.volume = Math.min(1.0, this.masterVolume * 0.25);
+    }
   }
   
   toggleSound() {
@@ -114,6 +120,50 @@ export class AudioSystem {
     const volume = Math.min(1.0, 0.4 + (bounceIntensity * 0.6));
     const pitch = Math.max(0.7, 1.2 - (bounceCount * 0.1)); // Pitch más bajo en rebotes sucesivos
     this.playSound('bounce', volume, pitch);
+  }
+
+  // Música de fondo
+  loadMusic() {
+    if (!this.soundEnabled) return;
+    try {
+      this.musicAudio = new Audio('/sounds/Galaxias Perdidas.mp3');
+      this.musicAudio.preload = 'auto';
+      this.musicAudio.loop = true;
+      this.musicAudio.volume = Math.min(1.0, this.masterVolume * 0.25);
+    } catch (error) {
+      console.warn('Error cargando música de fondo:', error);
+    }
+  }
+
+  playMusic() {
+    if (!this.soundEnabled || !this.musicEnabled) return;
+    if (!this.musicAudio) this.loadMusic();
+    if (!this.musicAudio) return;
+    this.musicAudio.currentTime = 0;
+    this.musicAudio.play().catch(error => {
+      console.warn('Error reproduciendo música de fondo:', error);
+    });
+  }
+
+  stopMusic() {
+    if (this.musicAudio) {
+      this.musicAudio.pause();
+      this.musicAudio.currentTime = 0;
+    }
+  }
+
+  toggleMusic() {
+    this.musicEnabled = !this.musicEnabled;
+    if (!this.musicEnabled) {
+      this.stopMusic();
+    } else {
+      this.playMusic();
+    }
+    return this.musicEnabled;
+  }
+
+  isMusicEnabled() {
+    return this.musicEnabled;
   }
 }
 

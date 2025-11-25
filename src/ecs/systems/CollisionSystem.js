@@ -4,6 +4,7 @@ import { Platform } from '../components/Platform.js';
 import { Physics } from '../components/Physics.js';
 import { PlatformEffect } from '../components/PlatformEffect.js';
 import useGameStore from '../../store/gameStore.js';
+import { audioSystem } from './AudioSystem.js';
 
 export class CollisionSystem {
   constructor(ecsManager, gameStore, particleSystem = null) {
@@ -196,6 +197,7 @@ export class CollisionSystem {
     if (this.particleSystem) {
       this.particleSystem.createExplosion(position, 30);
     }
+    audioSystem.playSound('explosion', 1.0, 1.0);
     
     // Obtener el estado y acciones del store directamente
     const { handleCollision } = this.gameStore.getState();

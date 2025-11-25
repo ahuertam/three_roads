@@ -6,6 +6,14 @@ const useGameStore = create((set, get) => ({
   shipPosition: [0, 2, -50], // Subir un poco para asegurar caída limpia sobre la plataforma
   initialZ: -50, // Posición Z inicial para calcular distancia
   distanceTraveled: 0, // Nueva propiedad para metros recorridos
+  maxScore: (() => {
+    try {
+      const v = localStorage.getItem('three_roads_maxScore');
+      return v ? parseInt(v, 10) || 0 : 0;
+    } catch {
+      return 0;
+    }
+  })(),
   justLoadedLevel: false, // Flag para evitar condiciones de carrera en el reset
   setShipPosition: (position) => {
     const state = get();
@@ -35,6 +43,13 @@ const useGameStore = create((set, get) => ({
   onPlatform: false,
   platformHeight: 0,
   crashPosition: null, // Posición donde ocurrió la colisión
+  setMaxScore: (value) => {
+    const next = Math.max(0, Math.floor(value || 0));
+    try {
+      localStorage.setItem('three_roads_maxScore', String(next));
+    } catch {}
+    set({ maxScore: next });
+  },
   
   updateGameTime: (deltaTime) => {
     const state = get();
@@ -45,11 +60,19 @@ const useGameStore = create((set, get) => ({
   updateScore: (points) => set((state) => ({ score: state.score + points })),
   increaseSpeed: () => set((state) => ({ speed: Math.min(state.speed + 0.1, 3) })),
   
-  handleCollision: (position) => set((state) => ({ 
-    lives: state.lives - 1,
-    gameState: 'crashed',
-    crashPosition: position
-  })),
+  handleCollision: (position) => {
+    const state = get();
+    const nextMax = Math.max(state.maxScore, state.distanceTraveled);
+    try {
+      localStorage.setItem('three_roads_maxScore', String(nextMax));
+    } catch {}
+    set({ 
+      lives: state.lives - 1,
+      gameState: 'crashed',
+      crashPosition: position,
+      maxScore: nextMax
+    });
+  },
   
   continueAfterCrash: () => {
     const state = get();

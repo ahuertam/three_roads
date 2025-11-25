@@ -65,10 +65,12 @@ export class GameManager {
   
   start() {
     this.isRunning = true;
+    this.audioSystem.playMusic();
   }
   
   stop() {
     this.isRunning = false;
+    this.audioSystem.stopMusic();
   }
   
   restart() {

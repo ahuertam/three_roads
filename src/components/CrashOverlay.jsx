@@ -7,7 +7,7 @@ function CrashOverlay() {
   const [showMessage, setShowMessage] = useState(false);
   
   useEffect(() => {
-    if (gameState === 'crashed' || gameState === 'gameover' || gameState === 'victory') {
+    if (gameState === 'crashed' || gameState === 'gameOver' || gameState === 'victory') {
       // Esperar 1 segundo antes de mostrar el mensaje
       const showTimer = setTimeout(() => {
         setShowMessage(true);
@@ -19,7 +19,7 @@ function CrashOverlay() {
           
           // Esperar 1 segundo antes de continuar
           setTimeout(() => {
-            if (gameState === 'gameover' || gameState === 'victory') {
+            if (gameState === 'gameOver' || gameState === 'victory') {
               restartGame();
             } else {
               continueAfterCrash();
@@ -40,11 +40,11 @@ function CrashOverlay() {
     }
   }, [gameState, continueAfterCrash, restartGame, showMessage]);
   
-  if ((gameState !== 'crashed' && gameState !== 'gameover' && gameState !== 'victory') || !showMessage) {
+  if ((gameState !== 'crashed' && gameState !== 'gameOver' && gameState !== 'victory') || !showMessage) {
     return null;
   }
   
-  const isGameOver = gameState === 'gameover';
+  const isGameOver = gameState === 'gameOver';
   const isVictory = gameState === 'victory';
   
   let title = "¡Te has estrellado!";
@@ -61,7 +61,7 @@ function CrashOverlay() {
     buttonText = "jugar de nuevo";
   }
   
-  const { score } = useGameStore.getState();
+  const { score, distanceTraveled, maxScore } = useGameStore.getState();
   
   const overlayElement = (
     <div style={{
@@ -96,9 +96,9 @@ function CrashOverlay() {
           textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
         }}>{title}</h2>
         
-        {isVictory && (
-           <p style={{ fontSize: '24px', color: '#4CAF50' }}>
-             Puntuación Final: {score}
+        {!isVictory && (
+           <p style={{ fontSize: '24px', color: '#ffffff' }}>
+             Puntuación: {distanceTraveled || 0}m
            </p>
         )}
         
@@ -107,16 +107,16 @@ function CrashOverlay() {
           fontSize: '22px',
           color: '#ffffff'
         }}>Presiona SALTO para {buttonText}</p>
-        <div style={{ 
-          fontSize: '16px', 
-          color: '#ccc',
-          marginTop: '15px',
-          padding: '10px',
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-          borderRadius: '8px'
-        }}>
-          (Barra espaciadora)
-        </div>
+      <div style={{ 
+        fontSize: '16px', 
+        color: '#ccc',
+        marginTop: '15px',
+        padding: '10px',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderRadius: '8px'
+      }}>
+        (Barra espaciadora)
+      </div>
       </div>
     </div>
   );

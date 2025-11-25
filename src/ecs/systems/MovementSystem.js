@@ -253,7 +253,7 @@ export class MovementSystem {
         physics.velocity.x = 0;
         physics.velocity.y = 0;
         physics.velocity.z = 0;
-        // Opcional: Reproducir sonido de caída/muerte
+        audioSystem.playSound('explosion', 1.0, 1.0);
       }
     }
     
