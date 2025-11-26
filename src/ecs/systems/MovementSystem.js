@@ -41,10 +41,14 @@ export class MovementSystem {
         const transform = entity.getComponent(Transform);
         const physics = entity.getComponent(Physics);
         
-        // Resetear posición y física
+        // Resetear posición y física COMPLETAMENTE
         transform.position = [...shipPosition];
         physics.velocity = { x: 0, y: 0, z: 0 };
         physics.isGrounded = false;
+        
+        // CRÍTICO: Resetear estado de rebote para evitar caídas
+        physics.bounceVelocity = 0;
+        physics.bounceCount = 0;
         
         console.log('Entity reset to:', transform.position);
         
