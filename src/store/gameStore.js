@@ -101,6 +101,19 @@ const useGameStore = create((set, get) => ({
   
   nextLevel: () => {
     const state = get();
+    
+    // GUARDAR HIGH SCORE DEL NIVEL ACTUAL antes de cambiar
+    const currentLevelId = state.currentLevel?.id || 'unknown';
+    const currentHigh = state.highScores[currentLevelId] || 0;
+    
+    if (state.distanceTraveled > currentHigh) {
+      const newHighScores = { ...state.highScores, [currentLevelId]: state.distanceTraveled };
+      try {
+        localStorage.setItem('three_roads_highScores', JSON.stringify(newHighScores));
+      } catch {}
+      set({ highScores: newHighScores });
+    }
+    
     const nextIndex = state.levelIndex + 1;
     
     if (nextIndex < LEVELS.length) {
