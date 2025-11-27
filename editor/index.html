@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three Roads - Editor de Niveles</title>
+    <link rel="stylesheet" href="editor.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🎮 Three Roads - Editor de Niveles</h1>
+            <p>Diseña niveles visualmente y exporta el código JavaScript</p>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel: Properties & Tools -->
+            <aside class="left-panel">
+                <!-- Level Properties -->
+                <section class="panel">
+                    <h2>📋 Propiedades del Nivel</h2>
+                    <div class="form-group">
+                        <label for="levelId">ID del Nivel:</label>
+                        <input type="text" id="levelId" placeholder="level_X" value="level_custom">
+                    </div>
+                    <div class="form-group">
+                        <label for="levelName">Nombre:</label>
+                        <input type="text" id="levelName" placeholder="Mi Nivel" value="Custom Level">
+                    </div>
+                    <div class="form-group">
+                        <label for="difficulty">Dificultad:</label>
+                        <select id="difficulty">
+                            <option value="easy">Fácil</option>
+                            <option value="medium" selected>Media</option>
+                            <option value="hard">Difícil</option>
+                        </select>
+                    </div>
+                </section>
+
+                <!-- Segment Tools -->
+                <section class="panel">
+                    <h2>🛠️ Herramientas</h2>
+                    
+                    <h3>Patrones Predefinidos</h3>
+                    <div class="pattern-buttons">
+                        <button class="btn-pattern" data-pattern="straight_road">Camino Recto</button>
+                        <button class="btn-pattern" data-pattern="small_gap">Hueco Pequeño</button>
+                        <button class="btn-pattern" data-pattern="gentle_climb">Subida Suave</button>
+                        <button class="btn-pattern" data-pattern="split_path">Camino Dividido</button>
+                    </div>
+
+                    <h3>Segmento Personalizado</h3>
+                    <button class="btn-primary" id="addCustomSegment">+ Añadir Grid Personalizado</button>
+                </section>
+
+                <!-- Cell Types Legend -->
+                <section class="panel">
+                    <h2>🎨 Tipos de Celda</h2>
+                    <div class="cell-types">
+                        <div class="cell-type" data-type="0">
+                            <div class="cell-preview empty"></div>
+                            <span>0 - Vacío</span>
+                        </div>
+                        <div class="cell-type active" data-type="1">
+                            <div class="cell-preview normal"></div>
+                            <span>1 - Normal</span>
+                        </div>
+                        <div class="cell-type" data-type="2">
+                            <div class="cell-preview wall"></div>
+                            <span>2 - Muro</span>
+                        </div>
+                        <div class="cell-type" data-type="3">
+                            <div class="cell-preview fire"></div>
+                            <span>3 - Fuego</span>
+                        </div>
+                        <div class="cell-type" data-type="4">
+                            <div class="cell-preview supply"></div>
+                            <span>4 - Suministros</span>
+                        </div>
+                        <div class="cell-type" data-type="5">
+                            <div class="cell-preview boost"></div>
+                            <span>5 - Impulso</span>
+                        </div>
+                        <div class="cell-type" data-type="6">
+                            <div class="cell-preview sticky"></div>
+                            <span>6 - Pegajosa</span>
+                        </div>
+                        <div class="cell-type" data-type="7">
+                            <div class="cell-preview slippery"></div>
+                            <span>7 - Resbaladiza</span>
+                        </div>
+                    </div>
+                    <p class="hint">Click en un tipo para seleccionarlo, luego click en el grid para pintar</p>
+                </section>
+            </aside>
+
+            <!-- Center Panel: Segments List & Grid Editor -->
+            <main class="center-panel">
+                <!-- Segments List -->
+                <section class="panel">
+                    <div class="panel-header">
+                        <h2>📦 Segmentos del Nivel</h2>
+                        <span id="segmentCount">0 segmentos</span>
+                    </div>
+                    <div id="segmentsList" class="segments-list">
+                        <p class="empty-state">No hay segmentos. Añade patrones o grids personalizados.</p>
+                    </div>
+                </section>
+
+                <!-- Grid Editor -->
+                <section class="panel" id="gridEditorPanel" style="display: none;">
+                    <div class="panel-header">
+                        <h2>✏️ Editor de Grid</h2>
+                        <button class="btn-close" id="closeGridEditor">✕</button>
+                    </div>
+                    
+                    <div class="grid-controls">
+                        <div class="form-group">
+                            <label for="segmentName">Nombre del Segmento:</label>
+                            <input type="text" id="segmentName" placeholder="Mi Segmento">
+                        </div>
+                        <div class="form-group">
+                            <label for="segmentLength">Longitud (metros):</label>
+                            <input type="number" id="segmentLength" value="100" min="20" max="500">
+                        </div>
+                        <div class="grid-size-controls">
+                            <button class="btn-small" id="addRow">+ Fila</button>
+                            <button class="btn-small" id="removeRow">- Fila</button>
+                            <button class="btn-small" id="addColumn">+ Columna</button>
+                            <button class="btn-small" id="removeColumn">- Columna</button>
+                        </div>
+                    </div>
+
+                    <div id="gridCanvas" class="grid-canvas"></div>
+
+                    <div class="grid-actions">
+                        <button class="btn-secondary" id="clearGrid">Limpiar Grid</button>
+                        <button class="btn-primary" id="saveGrid">Guardar Segmento</button>
+                    </div>
+                </section>
+            </main>
+
+            <!-- Right Panel: Export -->
+            <aside class="right-panel">
+                <section class="panel">
+                    <h2>💾 Exportar Nivel</h2>
+                    <button class="btn-export" id="exportLevel">Exportar Código</button>
+                    <button class="btn-secondary" id="copyCode">Copiar al Portapapeles</button>
+                    
+                    <h3>Código Generado</h3>
+                    <textarea id="exportedCode" readonly placeholder="El código aparecerá aquí..."></textarea>
+                    
+                    <div class="export-instructions">
+                        <h4>📝 Instrucciones:</h4>
+                        <ol>
+                            <li>Click en "Exportar Código"</li>
+                            <li>Copia el código generado</li>
+                            <li>Crea un archivo <code>levelX.js</code> en <code>src/levels/</code></li>
+                            <li>Pega el código</li>
+                            <li>Importa en <code>src/levels/index.js</code></li>
+                        </ol>
+                    </div>
+                </section>
+            </aside>
+        </div>
+    </div>
+
+    <script src="editor.js"></script>
+</body>
+</html>
