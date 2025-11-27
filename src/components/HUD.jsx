@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import useGameStore from '../store/gameStore';
 
 function HUD() {
@@ -11,6 +11,21 @@ function HUD() {
   const highScores = useGameStore(s => s.highScores);
   const currentLevelId = currentLevel?.id || 'unknown';
   const currentHighScore = highScores[currentLevelId] || 0;
+  
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    // Detectar si es un dispositivo móvil o táctil
+    const checkMobile = () => {
+      const hasTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsMobile(hasTouchScreen || isMobileDevice);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   if (gameState !== 'playing') return null;
   
@@ -217,44 +232,46 @@ function HUD() {
           </div>
         </div>
 
-        {/* Panel de controles */}
-        <div style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          color: 'white',
-          padding: '15px',
-          borderRadius: '10px',
-          fontFamily: 'Arial, sans-serif',
-          fontSize: '12px',
-          border: '2px solid #444',
-          boxShadow: '0 0 10px rgba(0, 0, 0, 0.5)'
-        }}>
+        {/* Panel de controles - Solo mostrar en desktop */}
+        {!isMobile && (
           <div style={{
-            color: '#FFD700',
-            fontSize: '14px',
-            fontWeight: 'bold',
-            marginBottom: '10px',
-            textAlign: 'center'
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            color: 'white',
+            padding: '15px',
+            borderRadius: '10px',
+            fontFamily: 'Arial, sans-serif',
+            fontSize: '12px',
+            border: '2px solid #444',
+            boxShadow: '0 0 10px rgba(0, 0, 0, 0.5)'
           }}>
-            CONTROLES
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#87CEEB', fontWeight: 'bold' }}>Mover:</span>
-              <span style={{
-                display: 'inline-flex', gap: '6px'
-              }}>
-                <span style={{ background: '#222', border: '1px solid #555', borderRadius: '4px', padding: '2px 6px' }}>W</span>
-                <span style={{ background: '#222', border: '1px solid #555', borderRadius: '4px', padding: '2px 6px' }}>A</span>
-                <span style={{ background: '#222', border: '1px solid #555', borderRadius: '4px', padding: '2px 6px' }}>S</span>
-                <span style={{ background: '#222', border: '1px solid #555', borderRadius: '4px', padding: '2px 6px' }}>D</span>
-              </span>
+            <div style={{
+              color: '#FFD700',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              marginBottom: '10px',
+              textAlign: 'center'
+            }}>
+              CONTROLES
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#32CD32', fontWeight: 'bold' }}>Saltar:</span>
-              <span style={{ background: '#222', border: '1px solid #555', borderRadius: '4px', padding: '2px 8px' }}>ESPACIO</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ color: '#87CEEB', fontWeight: 'bold' }}>Mover:</span>
+                <span style={{
+                  display: 'inline-flex', gap: '6px'
+                }}>
+                  <span style={{ background: '#222', border: '1px solid #555', borderRadius: '4px', padding: '2px 6px' }}>W</span>
+                  <span style={{ background: '#222', border: '1px solid #555', borderRadius: '4px', padding: '2px 6px' }}>A</span>
+                  <span style={{ background: '#222', border: '1px solid #555', borderRadius: '4px', padding: '2px 6px' }}>S</span>
+                  <span style={{ background: '#222', border: '1px solid #555', borderRadius: '4px', padding: '2px 6px' }}>D</span>
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ color: '#32CD32', fontWeight: 'bold' }}>Saltar:</span>
+                <span style={{ background: '#222', border: '1px solid #555', borderRadius: '4px', padding: '2px 8px' }}>ESPACIO</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );

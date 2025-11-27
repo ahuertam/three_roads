@@ -27,6 +27,11 @@ const useGameStore = create((set, get) => ({
       return;
     }
     
+    // Solo actualizar posición y distancia si el juego está en estado 'playing'
+    if (state.gameState !== 'playing') {
+      return;
+    }
+    
     // Calcular distancia recorrida basada en movimiento en Z
     const distanceFromStart = Math.abs(position[2] - state.initialZ);
     set({ 

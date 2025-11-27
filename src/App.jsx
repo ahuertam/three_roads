@@ -4,6 +4,7 @@ import Game from './components/Game';
 import CrashOverlay from './components/CrashOverlay';
 import LevelSelector from './components/LevelSelector';
 import HUD from './components/HUD';
+import MobileControls from './components/MobileControls';
 import './App.css';
 import { audioSystem } from './ecs/systems/AudioSystem';
 import { useEffect, useState } from 'react';
@@ -12,6 +13,7 @@ function App() {
   const [musicEnabled, setMusicEnabled] = useState(() => (
     typeof audioSystem.isMusicEnabled === 'function' ? audioSystem.isMusicEnabled() : true
   ));
+  const [inputSystem, setInputSystem] = useState(null);
 
   useEffect(() => {
     let activated = false;
@@ -43,7 +45,7 @@ function App() {
         camera={{ position: [0, 5, 0], fov: 75 }}
         style={{ background: 'linear-gradient(to bottom, #87CEEB, #98FB98)' }}
       >
-        <Game />
+        <Game onInputSystemReady={setInputSystem} />
       </Canvas>
 
       <div style={{
@@ -80,6 +82,7 @@ function App() {
       <LevelSelector />
       <HUD />
       <CrashOverlay />
+      <MobileControls inputSystem={inputSystem} />
     </div>
   );
 }

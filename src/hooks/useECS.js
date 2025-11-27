@@ -39,6 +39,7 @@ export function useECS() {
   return {
     shipEntity: gameManager.current?.getShipEntity(),
     obstacleEntities: gameManager.current?.getObstacleEntities() || [],
-    particleEntities: gameManager.current?.getParticleEntities() || []
+    particleEntities: gameManager.current?.getParticleEntities() || [],
+    inputSystem: gameManager.current?.inputSystem
   };
 }

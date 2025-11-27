@@ -11,8 +11,15 @@ import Particles from './Particles';
 // Remover: import CrashMessage from './CrashMessage';
 import { useECS } from '../hooks/useECS';
 
-function Game() {
-  const { shipEntity, obstacleEntities, particleEntities } = useECS();
+function Game({ onInputSystemReady }) {
+  const { shipEntity, obstacleEntities, particleEntities, inputSystem } = useECS();
+  
+  // Notificar al padre cuando inputSystem esté listo
+  React.useEffect(() => {
+    if (inputSystem && onInputSystemReady) {
+      onInputSystemReady(inputSystem);
+    }
+  }, [inputSystem, onInputSystemReady]);
   
   return (
     <>

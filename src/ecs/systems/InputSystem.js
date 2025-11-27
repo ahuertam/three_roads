@@ -38,6 +38,22 @@ export class InputSystem {
     this.keyUpHandler = handleKeyUp;
   }
   
+  // Método para actualizar input desde controles móviles
+  setMobileInput(mobileInput) {
+    const entities = this.ecsManager.getEntitiesWithTag('player');
+    entities.forEach(entity => {
+      const input = entity.getComponent(Input);
+      if (input) {
+        // Actualizar solo las teclas especificadas en mobileInput
+        if (mobileInput.left !== undefined) input.keys.left = mobileInput.left;
+        if (mobileInput.right !== undefined) input.keys.right = mobileInput.right;
+        if (mobileInput.forward !== undefined) input.keys.forward = mobileInput.forward;
+        if (mobileInput.backward !== undefined) input.keys.backward = mobileInput.backward;
+        if (mobileInput.jump !== undefined) input.keys.jump = mobileInput.jump;
+      }
+    });
+  }
+  
   updateKeyState(input, keyCode, pressed) {
     switch(keyCode) {
       case 'ArrowLeft':
