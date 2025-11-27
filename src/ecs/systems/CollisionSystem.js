@@ -82,6 +82,16 @@ export class CollisionSystem {
                 // Usar el mismo rango que la detección de plataforma (2.0) para asegurar consistencia
                 if (obstacle.platformType && distanceToTop <= 2.0) { 
                   // console.log('On platform type:', obstacle.platformType, 'Distance:', distanceToTop);
+                  
+                  // EFECTO ESPECIAL: Rebote automático en plataformas de impulso
+                  if (obstacle.platformType === 'BOOST' && shipPhysics.velocity.y < 0) {
+                    // Aplicar rebote automático como un muelle
+                    const bounceForce = 25; // Fuerza del rebote
+                    shipPhysics.velocity.y = bounceForce;
+                    // Mantener la dirección horizontal
+                    audioSystem.playJumpSound(1.5); // Sonido de rebote
+                  }
+                  
                   this.applyPlatformEffect(ship, shipEffects, shipPhysics, obstacle.platformType);
                   this.gameStore.getState().setSupplies(shipEffects.getSuppliesPercentage());
                   this.gameStore.getState().setCurrentEffect(shipEffects.currentEffect);
@@ -157,18 +167,18 @@ export class CollisionSystem {
       shipPhysics.velocity.z *= 1.5;
     }
     
-    // Sticky: reduce velocidad lateral DRÁSTICAMENTE (80% de reducción)
+    // Sticky: DETIENE la nave completamente
     if (shipEffects.isEffectActive('sticky')) {
-      shipPhysics.velocity.x *= 0.2; // Cambiado de 0.5 a 0.2 para efecto mucho más fuerte
+      // Reducir velocidad lateral drásticamente hasta casi detenerla
+      shipPhysics.velocity.x *= 0.1; // Reducción extrema
+      // También reducir velocidad hacia adelante
+      shipPhysics.velocity.z *= 0.5; // Frena la nave
     }
     
-    // Slippery: reduce fricción mucho más para deslizamiento notorio
+    // Slippery: fricción casi nula para deslizamiento extremo
     if (shipEffects.isEffectActive('slippery')) {
-      shipPhysics.friction = 0.99; // Cambiado de 0.98 a 0.99 para mejor control
-      // Reducir velocidad lateral gradualmente para evitar colisiones bruscas
-      if (Math.abs(shipPhysics.velocity.x) > 8) {
-        shipPhysics.velocity.x *= 0.95;
-      }
+      shipPhysics.friction = 0.995; // Casi sin fricción
+      // No limitar la velocidad lateral - dejar que se deslice libremente
     } else {
       shipPhysics.friction = 0.85; // Valor normal
     }

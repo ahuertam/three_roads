@@ -134,7 +134,8 @@ const useGameStore = create((set, get) => ({
         initialZ: -50,
         distanceTraveled: 0,
         crashPosition: null,
-        justLoadedLevel: true // Activar flag para proteger la posición
+        justLoadedLevel: true, // Activar flag para proteger la posición
+        supplies: 100 // Resetear suministros al 100%
         // Mantener score y vidas
       });
       // Importante: El ObstacleSpawnSystem detectará el cambio de nivel y reiniciará
@@ -161,7 +162,8 @@ const useGameStore = create((set, get) => ({
     distanceTraveled: 0,
     onPlatform: false,
     platformHeight: 0,
-    crashPosition: null
+    crashPosition: null,
+    supplies: 100 // Resetear suministros al 100%
   }),
   
   startLevel: (index) => {
@@ -180,7 +182,8 @@ const useGameStore = create((set, get) => ({
       onPlatform: false,
       platformHeight: 0,
       crashPosition: null,
-      justLoadedLevel: true
+      justLoadedLevel: true,
+      supplies: 100 // Resetear suministros al 100%
     });
   },
   

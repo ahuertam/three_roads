@@ -47,6 +47,15 @@ export class MovementSystem {
         if (platform) {
           platform.setOffPlatform();
         }
+        
+        // RESETEAR SUMINISTROS AL 100%
+        const platformEffect = entity.getComponent(PlatformEffect);
+        if (platformEffect) {
+          platformEffect.supplies = 100;
+          platformEffect.currentEffect = 'none';
+          platformEffect.effectTimer = 0;
+          console.log('Supplies reset to 100');
+        }
       });
       return; // Saltar este frame para evitar movimientos erráticos
     }
@@ -73,6 +82,30 @@ export class MovementSystem {
       // Actualizar el game store con los suministros
       if (this.gameStore) {
         this.gameStore.getState().setSupplies(platformEffect.getSuppliesPercentage());
+        
+        // VERIFICAR SI SE QUEDÓ SIN SUMINISTROS
+        if (platformEffect.supplies <= 0) {
+          const currentState = this.gameStore.getState();
+          
+          // Solo explotar si estamos jugando (evitar bucles)
+          if (currentState.gameState === 'playing') {
+            console.log('Ship ran out of supplies!');
+            
+            // Crear explosión
+            if (this.particleSystem) {
+              this.particleSystem.createExplosion(transform.position, 30);
+            }
+            
+            // Manejar crash por falta de suministros
+            currentState.handleCollision(transform.position);
+            
+            // Detener la nave
+            physics.velocity.x = 0;
+            physics.velocity.y = 0;
+            physics.velocity.z = 0;
+            audioSystem.playSound('explosion', 1.0, 1.0);
+          }
+        }
       }
     });
   }
@@ -97,24 +130,28 @@ export class MovementSystem {
     } else if (input.keys.right) {
       physics.velocity.x = input.lateralSpeed * lateralMultiplier;
     } else {
-      // Aplicar fricción más gradual cuando es slippery o sticky
+      // Aplicar fricción según el tipo de plataforma
       let frictionRate = physics.friction;
       if (isSlippery) {
-        frictionRate = 0.99; // Aumentado de 0.98 a 0.99 para deslizamiento mucho más largo
+        frictionRate = 0.995; // Casi sin fricción - deslizamiento extremo
       } else if (isSticky) {
-        frictionRate = 0.70; // Nuevo: sticky detiene muy rápido
+        frictionRate = 0.3; // Fricción muy alta - detiene casi instantáneamente
       }
       physics.velocity.x *= frictionRate;
     }
     
-    // Movimiento hacia adelante con consumo de suministros MUY REDUCIDO
+    // Movimiento hacia adelante con consumo de suministros escalado por velocidad
     if (input.keys.forward) {
       // Solo acelerar si hay suministros
       if (platformEffect.supplies > 0) {
-        this.baseSpeed = Math.min(this.baseSpeed + input.accelerationSpeed * delta, 200); // Aumentado de 30 a 60
+        this.baseSpeed = Math.min(this.baseSpeed + input.accelerationSpeed * delta, 200);
         
-        // Consumir suministros al acelerar - CONSUMO MÍNIMO
-        const accelerationConsumption = 1.5; // Reducido de 2 a 1.5
+        // Consumir suministros al acelerar - AUMENTA con la velocidad
+        // A baja velocidad: consumo bajo, a alta velocidad: consumo alto
+        const speedFactor = this.baseSpeed / 200; // 0 a 1
+        const baseConsumption = 1.5;
+        const speedMultiplier = 1 + (speedFactor * 3); // 1x a 4x consumo
+        const accelerationConsumption = baseConsumption * speedMultiplier;
         platformEffect.supplies = Math.max(0, platformEffect.supplies - accelerationConsumption * delta);
       } else {
         // Sin suministros, velocidad se reduce gradualmente
