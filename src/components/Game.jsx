@@ -9,6 +9,7 @@ import Obstacles from './Obstacles';
 import Track from './Track';
 import Particles from './Particles';
 import Starfield from './Starfield';
+import Title3D from './Title3D';
 // Remover: import CrashMessage from './CrashMessage';
 import { useECS } from '../hooks/useECS';
 
@@ -26,6 +27,9 @@ function Game({ onInputSystemReady }) {
     <>
       {/* Fondo de estrellas */}
       <Starfield count={2000} />
+      
+      {/* Título 3D discreto en la parte superior */}
+      <Title3D position={[0, 6, -80]} scale={0.8} opacity={0.5} />
       <ambientLight intensity={0.6} />
       <directionalLight
         position={[10, 10, 5]}

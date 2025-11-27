@@ -260,7 +260,7 @@ function HUD() {
             </div>
             {/* Plataforma Resbaladiza */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '16px', height: '16px', backgroundColor: '#FFA500', borderRadius: '3px', border: '1px solid #FF8C00' }} />
+              <div style={{ width: '16px', height: '16px', backgroundColor: '#FFA500', borderRadius: '3px', border: '1px solid #888' }} />
               <span>Resbaladiza</span>
             </div>
             {/* Plataforma Ardiente */}

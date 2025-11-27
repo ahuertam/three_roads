@@ -13,7 +13,7 @@ function Obstacle({ ecsEntity }) {
     SUPPLIES: { color: '#87CEEB', effect: 'supplies' }, // Azul claro
     BOOST: { color: '#32CD32', effect: 'boost' },       // Verde
     STICKY: { color: '#90EE90', effect: 'sticky' },     // Verde claro
-    SLIPPERY: { color: '#708090', effect: 'slippery' }, // Gris
+    SLIPPERY: { color: '#FFA500', effect: 'slippery' }, // Naranja
     BURNING: { color: '#FF6347', effect: 'burning' },   // Rojo/naranja
     GOAL: { color: '#FFD700', effect: 'goal' },          // Dorado
     BLOCK: { color: '#8B4513', effect: 'none' }          // Marrón

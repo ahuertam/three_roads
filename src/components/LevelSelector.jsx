@@ -53,10 +53,27 @@ function LevelSelector() {
         maxWidth: '650px',
         width: '90%'
       }}>
+        <h1 style={{
+          margin: '0 0 10px 0',
+          color: '#00ff00',
+          fontSize: '48px',
+          textTransform: 'uppercase',
+          letterSpacing: '4px',
+          textShadow: '0 0 20px rgba(0, 255, 0, 0.8), 0 0 40px rgba(0, 255, 0, 0.4)',
+          fontWeight: 'bold'
+        }}>Three-Roads</h1>
+        
+        <p style={{
+          margin: '0 0 20px 0',
+          color: '#87CEEB',
+          fontSize: '14px',
+          fontStyle: 'italic'
+        }}>by Alejandro Huerta</p>
+        
         <h2 style={{
           margin: '0 0 20px 0',
           color: '#00ff00',
-          fontSize: '32px',
+          fontSize: '24px',
           textTransform: 'uppercase',
           letterSpacing: '2px'
         }}>Selecciona nivel</h2>
