@@ -93,11 +93,14 @@ const useGameStore = create((set, get) => ({
   continueAfterCrash: () => {
     const state = get();
     if (state.lives > 0) {
-      set({ 
+      set({
         gameState: 'playing',
         shipPosition: [0, 2, -50],
+        initialZ: -50,
+        distanceTraveled: 0,
         crashPosition: null,
-        resetLevelGeneration: true // Señal para ObstacleSpawnSystem
+        resetLevelGeneration: true, // Señal para ObstacleSpawnSystem
+        justLoadedLevel: true // Proteger contra actualizaciones de posición obsoletas
       });
     } else {
       set({ gameState: 'gameOver' });

@@ -20,6 +20,7 @@ import { LEVEL_19 } from './level19.js';
 import { LEVEL_20 } from './level20.js';
 import { LEVEL_21 } from './level21.js';
 import { LEVEL_22 } from './level22.js';
+import { LEVEL_23 } from './level23.js';
 
 export const LEVELS = [
   LEVEL_1,
@@ -43,5 +44,6 @@ export const LEVELS = [
   LEVEL_19,
   LEVEL_20,
   LEVEL_21,
-  LEVEL_22
+  LEVEL_22,
+  LEVEL_23
 ];

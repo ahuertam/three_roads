@@ -17,22 +17,12 @@ export class MovementSystem {
   
   update(delta) {
     const { levelIndex, shipPosition } = this.gameStore.getState();
-    
-    // Detectar cambio de nivel y resetear física
-    // O si la posición está desincronizada (failsafe)
-    let forceReset = false;
-    const physicsEntities = this.ecsManager.getEntitiesWithComponents([Transform, Physics]);
-    
-    if (physicsEntities.length > 0) {
-      const shipZ = physicsEntities[0].getComponent(Transform).position[2];
-      if (Math.abs(shipZ - shipPosition[2]) > 500) {
-        console.log('MovementSystem: Position desync detected! Force reset.');
-        forceReset = true;
-      }
-    }
 
-    if (this.lastLevelIndex !== levelIndex || forceReset) {
-      console.log('MovementSystem: Level change/Reset detected!', this.lastLevelIndex, '->', levelIndex);
+    // Detectar cambio de nivel y resetear física
+    const physicsEntities = this.ecsManager.getEntitiesWithComponents([Transform, Physics]);
+
+    if (this.lastLevelIndex !== levelIndex) {
+      console.log('MovementSystem: Level change detected!', this.lastLevelIndex, '->', levelIndex);
       console.log('Resetting ship to:', shipPosition);
       
       this.lastLevelIndex = levelIndex;

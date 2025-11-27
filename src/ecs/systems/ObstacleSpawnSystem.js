@@ -43,10 +43,10 @@ export class ObstacleSpawnSystem {
   update(delta) {
     // Acceder al estado actual
     const state = this.gameStore.getState();
-    const { gameState, shipPosition, currentLevel, levelIndex } = state;
-    
+    const { gameState, currentLevel, levelIndex } = state;
+
     if (gameState !== 'playing') return;
-    
+
     // Detectar cambio de nivel
     if (this.currentLevelIndex !== levelIndex) {
       this.loadLevel(currentLevel, levelIndex);
@@ -61,15 +61,24 @@ export class ObstacleSpawnSystem {
       this.gameStore.getState().setResetLevelGeneration(false);
       return;
     }
-    
+
+    // Obtener posición REAL de la nave desde el Transform (no del gameStore que puede estar obsoleto)
+    const playerEntities = this.ecsManager.getEntitiesWithTag('player');
+    if (playerEntities.length === 0) return;
+
+    const playerTransform = playerEntities[0].getComponent(Transform);
+    if (!playerTransform) return;
+
+    const actualShipZ = playerTransform.position[2];
+
     // Generar nuevos segmentos si nos acercamos al final del último
     // La nave se mueve hacia Z negativo, así que verificamos si shipZ está cerca de nextSegmentStart.z
-    const distanceToNextSpawn = Math.abs(shipPosition[2] - this.nextSegmentStart.z);
-    
+    const distanceToNextSpawn = Math.abs(actualShipZ - this.nextSegmentStart.z);
+
     if (distanceToNextSpawn < this.spawnDistance) {
       this.spawnNextLevelSegment();
     }
-    
+
     this.cleanupOldObstacles();
   }
   
