@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/three_roads/static/css/main.63e4b506.css",
-    "main.js": "/three_roads/static/js/main.1132e4c2.js",
+    "main.js": "/three_roads/static/js/main.833958bc.js",
     "static/js/453.5ba9b70e.chunk.js": "/three_roads/static/js/453.5ba9b70e.chunk.js",
     "index.html": "/three_roads/index.html",
     "main.63e4b506.css.map": "/three_roads/static/css/main.63e4b506.css.map",
-    "main.1132e4c2.js.map": "/three_roads/static/js/main.1132e4c2.js.map",
+    "main.833958bc.js.map": "/three_roads/static/js/main.833958bc.js.map",
     "453.5ba9b70e.chunk.js.map": "/three_roads/static/js/453.5ba9b70e.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.63e4b506.css",
-    "static/js/main.1132e4c2.js"
+    "static/js/main.833958bc.js"
   ]
 }
