@@ -8,6 +8,7 @@ import Ship from './Ship';
 import Obstacles from './Obstacles';
 import Track from './Track';
 import Particles from './Particles';
+import Starfield from './Starfield';
 // Remover: import CrashMessage from './CrashMessage';
 import { useECS } from '../hooks/useECS';
 
@@ -23,6 +24,8 @@ function Game({ onInputSystemReady }) {
   
   return (
     <>
+      {/* Fondo de estrellas */}
+      <Starfield count={2000} />
       <ambientLight intensity={0.6} />
       <directionalLight
         position={[10, 10, 5]}

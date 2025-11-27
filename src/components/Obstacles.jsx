@@ -9,7 +9,7 @@ function Obstacle({ ecsEntity }) {
   
   // Tipos de plataformas según SkyRoads
   const platformTypes = {
-    NORMAL: { color: '#666666', effect: 'none' },
+    NORMAL: { color: '#6B5B95', effect: 'none' },
     SUPPLIES: { color: '#87CEEB', effect: 'supplies' }, // Azul claro
     BOOST: { color: '#32CD32', effect: 'boost' },       // Verde
     STICKY: { color: '#90EE90', effect: 'sticky' },     // Verde claro

@@ -240,7 +240,7 @@ function HUD() {
           }}>
             {/* Plataforma Normal */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '16px', height: '16px', backgroundColor: '#666666', borderRadius: '3px', border: '1px solid #888' }} />
+              <div style={{ width: '16px', height: '16px', backgroundColor: '#6B5B95', borderRadius: '3px', border: '1px solid #888' }} />
               <span>Normal</span>
             </div>
             {/* Plataforma de Suministros */}

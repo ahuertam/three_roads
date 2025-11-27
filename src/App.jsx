@@ -43,7 +43,7 @@ function App() {
     <div className="App" style={{ width: '100vw', height: '100vh', position: 'relative' }}>
       <Canvas
         camera={{ position: [0, 5, 0], fov: 75 }}
-        style={{ background: 'linear-gradient(to bottom, #87CEEB, #98FB98)' }}
+        style={{ background: '#0a0a15' }}
       >
         <Game onInputSystemReady={setInputSystem} />
       </Canvas>

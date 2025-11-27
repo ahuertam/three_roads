@@ -1,6 +1,6 @@
 // Definición de tipos de plataforma
 export const PLATFORM_TYPES = {
-  NORMAL: { color: '#666666', effect: 'none', name: 'Normal' },
+  NORMAL: { color: '#6B5B95', effect: 'none', name: 'Normal' },
   SUPPLIES: { color: '#87CEEB', effect: 'supplies', name: 'Suministros' },
   BOOST: { color: '#32CD32', effect: 'boost', name: 'Impulso' },
   STICKY: { color: '#90EE90', effect: 'sticky', name: 'Pegajoso' },
