@@ -9,8 +9,17 @@ function HUD() {
   const currentLevel = useGameStore(s => s.currentLevel);
   const levelIndex = useGameStore(s => s.levelIndex);
   const highScores = useGameStore(s => s.highScores);
+  const levelTime = useGameStore(s => s.levelTime);
   const currentLevelId = currentLevel?.id || 'unknown';
   const currentHighScore = highScores[currentLevelId] || 0;
+  
+  // Formatear tiempo en MM:SS.ms
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    const ms = Math.floor((seconds % 1) * 100);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+  };
   
   const [isMobile, setIsMobile] = useState(false);
   
@@ -97,6 +106,36 @@ function HUD() {
             color: '#ffffff'
           }}>
             {distanceTraveled || 0}m
+          </div>
+        </div>
+        
+        {/* Cronómetro del nivel */}
+        <div style={{
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          color: 'white',
+          padding: '15px 20px',
+          borderRadius: '10px',
+          fontFamily: 'Arial, sans-serif',
+          fontSize: '18px',
+          fontWeight: 'bold',
+          border: '2px solid #87CEEB',
+          boxShadow: '0 0 10px rgba(135, 206, 235, 0.3)',
+          minWidth: '120px',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            color: '#87CEEB',
+            fontSize: '14px',
+            marginBottom: '5px'
+          }}>
+            TIEMPO
+          </div>
+          <div style={{
+            fontSize: '20px',
+            color: '#ffffff',
+            fontFamily: 'monospace'
+          }}>
+            {formatTime(levelTime)}
           </div>
         </div>
         

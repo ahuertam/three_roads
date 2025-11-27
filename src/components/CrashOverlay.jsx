@@ -3,8 +3,16 @@ import { createPortal } from 'react-dom';
 import useGameStore from '../store/gameStore';
 
 function CrashOverlay() {
-  const { gameState, continueAfterCrash, restartGame } = useGameStore();
+  const { gameState, continueAfterCrash, restartGame, levelTime, bestTimes, currentLevel } = useGameStore();
   const [showMessage, setShowMessage] = useState(false);
+  
+  // Formatear tiempo en MM:SS.ms
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    const ms = Math.floor((seconds % 1) * 100);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+  };
   
   useEffect(() => {
     if (gameState === 'crashed' || gameState === 'gameOver' || gameState === 'victory') {
@@ -100,6 +108,37 @@ function CrashOverlay() {
            <p style={{ fontSize: '24px', color: '#ffffff' }}>
              Puntuación: {distanceTraveled || 0}m
            </p>
+        )}
+        
+        {isVictory && (
+          <>
+            <p style={{ fontSize: '24px', color: '#ffffff', marginBottom: '10px' }}>
+              Distancia: {distanceTraveled || 0}m
+            </p>
+            <p style={{ 
+              fontSize: '28px', 
+              color: '#87CEEB',
+              marginBottom: '5px',
+              fontFamily: 'monospace'
+            }}>
+              Tiempo: {formatTime(levelTime)}
+            </p>
+            {(() => {
+              const currentLevelId = currentLevel?.id || 'unknown';
+              const previousBest = bestTimes[currentLevelId];
+              const isNewRecord = !previousBest || levelTime < previousBest;
+              
+              return (
+                <p style={{ 
+                  fontSize: '16px', 
+                  color: isNewRecord ? '#FFD700' : '#aaa',
+                  marginTop: '5px'
+                }}>
+                  {isNewRecord ? '🏆 ¡NUEVO RÉCORD!' : `Mejor: ${formatTime(previousBest)}`}
+                </p>
+              );
+            })()}
+          </>
         )}
         
         <p style={{ 

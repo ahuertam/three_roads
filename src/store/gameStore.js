@@ -14,6 +14,15 @@ const useGameStore = create((set, get) => ({
       return {};
     }
   })(),
+  bestTimes: (() => {
+    try {
+      const v = localStorage.getItem('three_roads_bestTimes');
+      return v ? JSON.parse(v) : {};
+    } catch {
+      return {};
+    }
+  })(),
+  levelTime: 0, // Tiempo del nivel actual en segundos
   justLoadedLevel: false, // Flag para evitar condiciones de carrera en el reset
   resetLevelGeneration: false, // Flag para forzar regeneración de nivel (fix flickering)
   setShipPosition: (position) => {
@@ -64,7 +73,10 @@ const useGameStore = create((set, get) => ({
   updateGameTime: (deltaTime) => {
     const state = get();
     if (state.gameState === 'playing') {
-      set({ gameTime: state.gameTime + deltaTime });
+      set({ 
+        gameTime: state.gameTime + deltaTime,
+        levelTime: state.levelTime + deltaTime
+      });
     }
   },
   updateScore: (points) => set((state) => ({ score: state.score + points })),
@@ -122,6 +134,17 @@ const useGameStore = create((set, get) => ({
       set({ highScores: newHighScores });
     }
     
+    // GUARDAR MEJOR TIEMPO DEL NIVEL ACTUAL
+    const currentBestTime = state.bestTimes[currentLevelId];
+    if (!currentBestTime || state.levelTime < currentBestTime) {
+      const newBestTimes = { ...state.bestTimes, [currentLevelId]: state.levelTime };
+      try {
+        localStorage.setItem('three_roads_bestTimes', JSON.stringify(newBestTimes));
+      } catch {}
+      set({ bestTimes: newBestTimes });
+      console.log(`New best time for ${currentLevelId}: ${state.levelTime.toFixed(2)}s`);
+    }
+    
     const nextIndex = state.levelIndex + 1;
     
     if (nextIndex < LEVELS.length) {
@@ -135,7 +158,8 @@ const useGameStore = create((set, get) => ({
         distanceTraveled: 0,
         crashPosition: null,
         justLoadedLevel: true, // Activar flag para proteger la posición
-        supplies: 100 // Resetear suministros al 100%
+        supplies: 100, // Resetear suministros al 100%
+        levelTime: 0 // Resetear cronómetro del nivel
         // Mantener score y vidas
       });
       // Importante: El ObstacleSpawnSystem detectará el cambio de nivel y reiniciará
@@ -157,6 +181,7 @@ const useGameStore = create((set, get) => ({
     currentLevel: LEVELS[0],
     speed: 1,
     gameTime: 0,
+    levelTime: 0, // Resetear cronómetro del nivel
     shipPosition: [0, 2, -50],
     initialZ: -50,
     distanceTraveled: 0,
@@ -176,6 +201,7 @@ const useGameStore = create((set, get) => ({
       currentLevel: LEVELS[i],
       speed: 1,
       gameTime: 0,
+      levelTime: 0, // Resetear cronómetro del nivel
       shipPosition: [0, 2, -50],
       initialZ: -50,
       distanceTraveled: 0,

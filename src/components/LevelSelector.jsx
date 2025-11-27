@@ -5,7 +5,7 @@ import { LEVELS } from '../levels/index';
 const LEVELS_PER_PAGE = 6;
 
 function LevelSelector() {
-  const { gameState, startLevel, highScores } = useGameStore();
+  const { gameState, startLevel, highScores, bestTimes } = useGameStore();
   const [currentPage, setCurrentPage] = useState(0);
   
   if (gameState !== 'menu') return null;
@@ -101,6 +101,15 @@ function LevelSelector() {
                 <div style={{ fontSize: '18px' }}>{lvl.name || 'Sin título'}</div>
                 <div style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
                   High Score: {highScores[lvl.id] || 0}m
+                </div>
+                <div style={{ fontSize: '12px', color: '#87CEEB', marginTop: '2px' }}>
+                  Mejor: {bestTimes[lvl.id] ? (() => {
+                    const seconds = bestTimes[lvl.id];
+                    const mins = Math.floor(seconds / 60);
+                    const secs = Math.floor(seconds % 60);
+                    const ms = Math.floor((seconds % 1) * 100);
+                    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+                  })() : 'N/A'}
                 </div>
               </button>
             );
