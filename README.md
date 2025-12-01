@@ -2,12 +2,18 @@
 
 **Three Roads** is an immersive 3D racing/runner game built with modern web technologies. Navigate your ship through a dynamic environment, avoid obstacles, and survive as long as possible in this high-speed challenge.
 
+![Three Roads Gameplay](public/screenshot.png)
+
 ## 🚀 Features
 
 -   **3D Graphics**: Powered by [React Three Fiber](https://docs.pmnd.rs/react-three-fiber) and [Three.js](https://threejs.org/) for performant and declarative 3D scenes.
 -   **Physics Engine**: Realistic physics interactions using [Cannon.js](https://github.com/pmndrs/use-cannon) (via `@react-three/cannon`).
 -   **ECS Architecture**: Built on a custom Entity Component System (ECS) for scalable and decoupled game logic.
 -   **Reactive State**: Game state management handled by [Zustand](https://github.com/pmndrs/zustand) for high-performance updates.
+-   **Content & Progression**:
+    -   **21 Challenging Levels**: Expanded content with increasing difficulty.
+    -   **Level Selector**: Navigate through levels with a paginated interface.
+    -   **High Score Tracking**: Persistent high scores for each level.
 -   **Dynamic Gameplay**:
     -   Procedural track generation.
     -   Interactive ship controls with visual feedback.
