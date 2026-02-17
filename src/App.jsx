@@ -8,12 +8,14 @@ import MobileControls from './components/MobileControls';
 import './App.css';
 import { audioSystem } from './ecs/systems/AudioSystem';
 import { useEffect, useState } from 'react';
+import useGameStore from './store/gameStore';
 
 function App() {
   const [musicEnabled, setMusicEnabled] = useState(() => (
     typeof audioSystem.isMusicEnabled === 'function' ? audioSystem.isMusicEnabled() : true
   ));
   const [inputSystem, setInputSystem] = useState(null);
+  const setPreviewLevel = useGameStore((state) => state.setPreviewLevel);
 
   useEffect(() => {
     let activated = false;
@@ -33,6 +35,38 @@ function App() {
       window.removeEventListener('keydown', tryPlay);
     };
   }, []);
+
+  useEffect(() => {
+    if (!window.opener) return;
+    window.opener.postMessage({ type: 'preview-ready' }, '*');
+  }, []);
+
+  useEffect(() => {
+    const handler = (event) => {
+      const data = event?.data;
+      if (!data || data.type !== 'preview-level') return;
+      let parsed = data.payload;
+      let payloadHash = null;
+      if (typeof parsed === 'string') {
+        payloadHash = parsed;
+        try {
+          parsed = JSON.parse(parsed);
+        } catch {
+          return;
+        }
+      } else {
+        try {
+          payloadHash = JSON.stringify(parsed);
+        } catch {
+          payloadHash = null;
+        }
+      }
+      if (!parsed || !parsed.segments) return;
+      setPreviewLevel(parsed, payloadHash);
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, [setPreviewLevel]);
 
   const toggleMusic = () => {
     const enabled = audioSystem.toggleMusic();

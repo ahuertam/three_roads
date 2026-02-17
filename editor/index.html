@@ -49,6 +49,11 @@
                         <button class="btn-pattern" data-pattern="small_gap">Hueco Pequeño</button>
                         <button class="btn-pattern" data-pattern="gentle_climb">Subida Suave</button>
                         <button class="btn-pattern" data-pattern="split_path">Camino Dividido</button>
+                        <button class="btn-pattern" data-pattern="step_sequence">Escaleras</button>
+                        <button class="btn-pattern" data-pattern="hazard_road">Camino Peligroso</button>
+                        <button class="btn-pattern" data-pattern="island_hops">Islas Flotantes</button>
+                        <button class="btn-pattern" data-pattern="narrow_bridge">Puente Estrecho</button>
+                        <button class="btn-pattern" data-pattern="block_field">Campo de Bloques</button>
                     </div>
 
                     <h3>Segmento Personalizado</h3>
@@ -131,6 +136,7 @@
                             <button class="btn-small" id="addColumn">+ Columna</button>
                             <button class="btn-small" id="removeColumn">- Columna</button>
                         </div>
+                        <p class="grid-hint">Columnas: 1 a 3 (límites del juego)</p>
                     </div>
 
                     <div id="gridCanvas" class="grid-canvas"></div>
@@ -146,7 +152,12 @@
             <aside class="right-panel">
                 <section class="panel">
                     <h2>💾 Exportar Nivel</h2>
+                    <div class="form-group">
+                        <label for="previewBaseUrl">URL del juego:</label>
+                        <input type="text" id="previewBaseUrl" placeholder="http://localhost:3000">
+                    </div>
                     <button class="btn-export" id="exportLevel">Exportar Código</button>
+                    <button class="btn-preview" id="previewLevel">Probar en el juego</button>
                     <button class="btn-secondary" id="copyCode">Copiar al Portapapeles</button>
                     
                     <h3>Código Generado</h3>

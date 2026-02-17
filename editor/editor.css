@@ -175,6 +175,23 @@ button {
     box-shadow: 0 0 20px rgba(50, 205, 50, 0.5);
 }
 
+.btn-preview {
+    width: 100%;
+    padding: 12px;
+    background: #00bcd4;
+    color: #000;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 1em;
+    margin-bottom: 10px;
+}
+
+.btn-preview:hover {
+    background: #0097a7;
+    box-shadow: 0 0 20px rgba(0, 188, 212, 0.5);
+}
+
 .btn-close {
     background: #ff4444;
     color: #fff;
@@ -201,6 +218,19 @@ button {
 .btn-small:hover {
     background: #555;
     border-color: #00ff00;
+}
+
+.btn-small:disabled {
+    background: #2a2a2a;
+    color: #777;
+    border-color: #333;
+    cursor: not-allowed;
+}
+
+.grid-hint {
+    margin-top: 8px;
+    color: #888;
+    font-size: 0.85em;
 }
 
 /* Pattern Buttons */

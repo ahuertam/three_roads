@@ -1,5 +1,6 @@
 import { Transform } from '../components/Transform.js';
 import { Collision } from '../components/Collision.js';
+import { Physics } from '../components/Physics.js';
 import {
   PLATFORM_TYPES,
   PATTERN_LIBRARY,
@@ -96,6 +97,26 @@ export class ObstacleSpawnSystem {
     
     // Spawnear plataforma inicial para el nuevo nivel
     this.spawnInitialPlatform();
+    
+    if (this.gameStore.getState().isPreview) {
+      const playerEntities = this.ecsManager.getEntitiesWithTag('player');
+      if (playerEntities.length > 0) {
+        const player = playerEntities[0];
+        const transform = player.getComponent(Transform);
+        if (transform) {
+          transform.position = [0, 2, -50];
+        }
+        const physics = player.getComponent(Physics);
+        if (physics) {
+          physics.velocity.x = 0;
+          physics.velocity.y = 0;
+          physics.velocity.z = 0;
+          physics.isGrounded = false;
+          physics.bounceVelocity = 0;
+          physics.bounceCount = 0;
+        }
+      }
+    }
   }
   
   spawnInitialPlatform() {

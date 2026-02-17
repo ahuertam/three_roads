@@ -1,4 +1,18 @@
 // Level Editor State
+const GRID_MIN_COLUMNS = 1;
+const GRID_MAX_COLUMNS = 3;
+const GRID_DEFAULT_COLUMNS = 3;
+const DEFAULT_GRID = [
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1]
+];
+const PREVIEW_BASE_STORAGE_KEY = 'three_roads_preview_base_url';
+const PREVIEW_DATA_STORAGE_PREFIX = 'three_roads_preview_level_';
+let lastPreviewPayload = null;
+let lastPreviewWindow = null;
+let lastPreviewOrigin = '*';
+
 const editorState = {
     levelId: 'level_custom',
     levelName: 'Custom Level',
@@ -13,6 +27,11 @@ const editorState = {
 document.addEventListener('DOMContentLoaded', () => {
     initializeEventListeners();
     updateSegmentsList();
+    updateGridControls();
+    if (!editorState.currentGrid) {
+        openGridEditor();
+    }
+    setupPreviewHandshake();
 });
 
 // Event Listeners
@@ -63,7 +82,16 @@ function initializeEventListeners() {
     
     // Export
     document.getElementById('exportLevel').addEventListener('click', exportLevel);
+    document.getElementById('previewLevel').addEventListener('click', previewLevel);
     document.getElementById('copyCode').addEventListener('click', copyToClipboard);
+
+    const previewBaseInput = document.getElementById('previewBaseUrl');
+    if (previewBaseInput) {
+        previewBaseInput.value = getStoredPreviewBaseUrl();
+        previewBaseInput.addEventListener('input', () => {
+            savePreviewBaseUrl(previewBaseInput.value);
+        });
+    }
 }
 
 // Add pattern segment
@@ -81,16 +109,12 @@ function openGridEditor(segmentIndex = null) {
         const segment = editorState.segments[segmentIndex];
         document.getElementById('segmentName').value = segment.name || '';
         document.getElementById('segmentLength').value = segment.length || 100;
-        editorState.currentGrid = JSON.parse(JSON.stringify(segment.grid));
+        editorState.currentGrid = normalizeGrid(JSON.parse(JSON.stringify(segment.grid)));
     } else {
         // New segment
         document.getElementById('segmentName').value = '';
         document.getElementById('segmentLength').value = 100;
-        editorState.currentGrid = [
-            [1, 1, 1],
-            [1, 1, 1],
-            [1, 1, 1]
-        ];
+        editorState.currentGrid = JSON.parse(JSON.stringify(DEFAULT_GRID));
     }
     
     document.getElementById('gridEditorPanel').style.display = 'block';
@@ -138,15 +162,50 @@ function renderGrid() {
         
         canvas.appendChild(rowDiv);
     });
+    
+    updateGridControls();
+}
+
+function normalizeGrid(grid) {
+    if (!Array.isArray(grid) || grid.length === 0) {
+        return JSON.parse(JSON.stringify(DEFAULT_GRID));
+    }
+    
+    const firstRowLength = Array.isArray(grid[0]) ? grid[0].length : GRID_DEFAULT_COLUMNS;
+    const targetColumns = Math.min(GRID_MAX_COLUMNS, Math.max(GRID_MIN_COLUMNS, firstRowLength || GRID_DEFAULT_COLUMNS));
+    
+    return grid.map(row => {
+        const normalizedRow = Array.isArray(row) ? row.slice(0, targetColumns) : [];
+        while (normalizedRow.length < targetColumns) {
+            normalizedRow.push(1);
+        }
+        return normalizedRow;
+    });
+}
+
+function getCurrentColumnCount() {
+    const firstRowLength = editorState.currentGrid?.[0]?.length;
+    if (!firstRowLength) return GRID_DEFAULT_COLUMNS;
+    return Math.min(GRID_MAX_COLUMNS, Math.max(GRID_MIN_COLUMNS, firstRowLength));
+}
+
+function updateGridControls() {
+    const addColumnButton = document.getElementById('addColumn');
+    const removeColumnButton = document.getElementById('removeColumn');
+    if (!addColumnButton || !removeColumnButton) return;
+    const currentColumns = getCurrentColumnCount();
+    addColumnButton.disabled = currentColumns >= GRID_MAX_COLUMNS;
+    removeColumnButton.disabled = currentColumns <= GRID_MIN_COLUMNS;
 }
 
 // Modify grid
 function modifyGrid(action) {
     const grid = editorState.currentGrid;
+    const currentColumns = getCurrentColumnCount();
     
     switch(action) {
         case 'addRow':
-            const newRow = new Array(grid[0].length).fill(1);
+            const newRow = new Array(currentColumns).fill(1);
             grid.push(newRow);
             break;
             
@@ -157,11 +216,13 @@ function modifyGrid(action) {
             break;
             
         case 'addColumn':
-            grid.forEach(row => row.push(1));
+            if (currentColumns < GRID_MAX_COLUMNS) {
+                grid.forEach(row => row.push(1));
+            }
             break;
             
         case 'removeColumn':
-            if (grid[0].length > 1) {
+            if (currentColumns > GRID_MIN_COLUMNS) {
                 grid.forEach(row => row.pop());
             }
             break;
@@ -189,7 +250,7 @@ function saveGrid() {
         type: 'custom_grid',
         name: name,
         length: length,
-        grid: JSON.parse(JSON.stringify(editorState.currentGrid))
+        grid: normalizeGrid(JSON.parse(JSON.stringify(editorState.currentGrid)))
     };
     
     if (editorState.editingSegmentIndex !== null) {
@@ -230,7 +291,9 @@ function updateSegmentsList() {
         
         if (segment.type === 'custom_grid') {
             segmentName = segment.name || 'Grid Personalizado';
-            segmentDetails = `${segment.grid.length}x${segment.grid[0].length} - ${segment.length}m`;
+            const rowCount = segment.grid.length;
+            const colCount = segment.grid[0]?.length || GRID_DEFAULT_COLUMNS;
+            segmentDetails = `${rowCount}x${colCount} - ${segment.length}m`;
         } else {
             segmentName = formatPatternName(segment.type);
             segmentDetails = 'Patrón predefinido';
@@ -329,7 +392,12 @@ function formatPatternName(pattern) {
         'straight_road': 'Camino Recto',
         'small_gap': 'Hueco Pequeño',
         'gentle_climb': 'Subida Suave',
-        'split_path': 'Camino Dividido'
+        'split_path': 'Camino Dividido',
+        'step_sequence': 'Escaleras',
+        'hazard_road': 'Camino Peligroso',
+        'island_hops': 'Islas Flotantes',
+        'narrow_bridge': 'Puente Estrecho',
+        'block_field': 'Campo de Bloques'
     };
     return names[pattern] || pattern;
 }
@@ -340,21 +408,38 @@ function exportLevel() {
     document.getElementById('exportedCode').value = code;
 }
 
+function previewLevel() {
+    const segments = buildPreviewSegments();
+    const levelData = buildLevelData(segments);
+    const payload = JSON.stringify(levelData);
+    const baseUrl = getPreviewBaseUrlFromInput();
+    let targetUrl = getPreviewUrl(payload, baseUrl);
+    const previewWindow = window.open(targetUrl, '_blank');
+    lastPreviewPayload = payload;
+    lastPreviewWindow = previewWindow;
+    lastPreviewOrigin = getOriginFromBaseUrl(baseUrl);
+    sendPreviewPayload(previewWindow, payload, baseUrl);
+}
+
 // Generate level code
 function generateLevelCode() {
-    const varName = editorState.levelId.toUpperCase().replace(/-/g, '_');
+    const safeId = (editorState.levelId || '').trim() || 'level_custom';
+    let varName = safeId.toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+    if (!/^[A-Z_]/.test(varName)) {
+        varName = `LEVEL_${varName}`;
+    }
     
     let code = `export const ${varName} = {\n`;
-    code += `  id: '${editorState.levelId}',\n`;
-    code += `  name: '${editorState.levelName}',\n`;
-    code += `  difficulty: '${editorState.difficulty}',\n`;
+    code += `  id: '${escapeString(safeId)}',\n`;
+    code += `  name: '${escapeString(editorState.levelName)}',\n`;
+    code += `  difficulty: '${escapeString(editorState.difficulty)}',\n`;
     code += `  segments: [\n`;
     
     editorState.segments.forEach((segment, index) => {
         if (segment.type === 'custom_grid') {
             code += `    {\n`;
             code += `      type: 'custom_grid',\n`;
-            code += `      name: '${segment.name}',\n`;
+            code += `      name: '${escapeString(segment.name)}',\n`;
             code += `      length: ${segment.length},\n`;
             code += `      grid: [\n`;
             segment.grid.forEach(row => {
@@ -377,6 +462,180 @@ function generateLevelCode() {
     code += `};\n`;
     
     return code;
+}
+
+function escapeString(value) {
+    return String(value ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+function buildLevelData(segmentsOverride) {
+    const safeId = (editorState.levelId || '').trim() || 'level_custom';
+    const name = editorState.levelName || 'Custom Level';
+    const difficulty = editorState.difficulty || 'medium';
+    const segments = segmentsOverride ?? editorState.segments.map(segment => {
+        if (segment.type === 'custom_grid') {
+            return {
+                type: 'custom_grid',
+                name: segment.name || 'Custom Grid',
+                length: Number.parseInt(segment.length, 10) || 100,
+                grid: normalizeGrid(JSON.parse(JSON.stringify(segment.grid)))
+            };
+        }
+        return { type: segment.type };
+    });
+    
+    return {
+        id: safeId,
+        name,
+        difficulty,
+        segments
+    };
+}
+
+function getPreviewUrl(payload, baseUrl) {
+    const params = new URLSearchParams();
+    if (isSameOriginPreview(baseUrl)) {
+        const previewKey = storePreviewPayload(payload);
+        if (previewKey) {
+            params.set('previewKey', previewKey);
+        } else {
+            params.set('previewLevelData', payload);
+        }
+    } else {
+        params.set('preview', '1');
+    }
+    return `${baseUrl}/?${params.toString()}`;
+}
+
+function buildPreviewSegments() {
+    const baseSegments = editorState.segments.map(segment => {
+        if (segment.type === 'custom_grid') {
+            return {
+                type: 'custom_grid',
+                name: segment.name || 'Custom Grid',
+                length: Number.parseInt(segment.length, 10) || 100,
+                grid: normalizeGrid(JSON.parse(JSON.stringify(segment.grid)))
+            };
+        }
+        return { type: segment.type };
+    });
+    
+    const pending = getPendingGridSegment();
+    if (!pending) return baseSegments;
+    
+    if (editorState.editingSegmentIndex !== null && baseSegments[editorState.editingSegmentIndex]) {
+        baseSegments[editorState.editingSegmentIndex] = pending;
+        return baseSegments;
+    }
+    
+    return [...baseSegments, pending];
+}
+
+function getPendingGridSegment() {
+    if (!editorState.currentGrid) return null;
+    const nameInput = document.getElementById('segmentName');
+    const lengthInput = document.getElementById('segmentLength');
+    const name = nameInput?.value || 'Custom Grid';
+    const length = Number.parseInt(lengthInput?.value, 10) || 100;
+    return {
+        type: 'custom_grid',
+        name,
+        length,
+        grid: normalizeGrid(JSON.parse(JSON.stringify(editorState.currentGrid)))
+    };
+}
+
+function getPreviewBaseUrlFromInput() {
+    const input = document.getElementById('previewBaseUrl');
+    if (!input) return getDefaultPreviewBaseUrl();
+    return normalizeBaseUrl(input.value);
+}
+
+function getStoredPreviewBaseUrl() {
+    const stored = localStorage.getItem(PREVIEW_BASE_STORAGE_KEY);
+    return stored || getDefaultPreviewBaseUrl();
+}
+
+function savePreviewBaseUrl(value) {
+    const normalized = normalizeBaseUrl(value);
+    localStorage.setItem(PREVIEW_BASE_STORAGE_KEY, normalized);
+    return normalized;
+}
+
+function normalizeBaseUrl(value) {
+    const trimmed = String(value ?? '').trim();
+    if (!trimmed) return getDefaultPreviewBaseUrl();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+        return trimmed.replace(/\/$/, '');
+    }
+    if (trimmed.startsWith('localhost') || trimmed.startsWith('127.0.0.1')) {
+        return `http://${trimmed}`.replace(/\/$/, '');
+    }
+    return trimmed.replace(/\/$/, '');
+}
+
+function getDefaultPreviewBaseUrl() {
+    if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+        return window.location.origin;
+    }
+    return 'http://localhost:3000';
+}
+
+function isSameOriginPreview(baseUrl) {
+    if (window.location.protocol !== 'http:' && window.location.protocol !== 'https:') {
+        return false;
+    }
+    try {
+        return new URL(baseUrl).origin === window.location.origin;
+    } catch {
+        return false;
+    }
+}
+
+function storePreviewPayload(payload) {
+    try {
+        const key = `${PREVIEW_DATA_STORAGE_PREFIX}${Date.now()}`;
+        localStorage.setItem(key, payload);
+        localStorage.setItem(`${PREVIEW_DATA_STORAGE_PREFIX}latest`, key);
+        return key;
+    } catch {
+        return null;
+    }
+}
+
+function sendPreviewPayload(previewWindow, payload, baseUrl) {
+    if (!previewWindow) return;
+    const targetOrigin = getOriginFromBaseUrl(baseUrl);
+    let attempts = 0;
+    const send = () => {
+        if (previewWindow.closed) return;
+        attempts += 1;
+        previewWindow.postMessage({ type: 'preview-level', payload }, targetOrigin);
+        if (attempts < 20) {
+            setTimeout(send, 400);
+        }
+    };
+    setTimeout(send, 400);
+}
+
+function setupPreviewHandshake() {
+    window.addEventListener('message', (event) => {
+        const data = event?.data;
+        if (!data || data.type !== 'preview-ready') return;
+        if (!lastPreviewPayload) return;
+        const target = event.source || lastPreviewWindow;
+        if (!target || target.closed) return;
+        const origin = event.origin && event.origin !== 'null' ? event.origin : lastPreviewOrigin;
+        target.postMessage({ type: 'preview-level', payload: lastPreviewPayload }, origin || '*');
+    });
+}
+
+function getOriginFromBaseUrl(baseUrl) {
+    try {
+        return new URL(baseUrl).origin;
+    } catch {
+        return '*';
+    }
 }
 
 // Copy to clipboard

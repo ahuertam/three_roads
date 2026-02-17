@@ -38,7 +38,7 @@ export class LevelLoader {
     
     // Configuración del grid
     const laneWidth = 15; // Ancho de cada carril
-    const lanes = [-laneWidth, 0, laneWidth]; // Posiciones X: Izquierda, Centro, Derecha
+    const defaultLanes = [-laneWidth, 0, laneWidth]; // Posiciones X: Izquierda, Centro, Derecha
     
     // Calcular longitud de cada bloque basado en el largo total y número de filas
     const rows = grid.length;
@@ -52,8 +52,18 @@ export class LevelLoader {
       const zPos = -(rowIndex * blockLength) - (blockLength / 2);
       
       // Iterar sobre las columnas (carriles)
+      const columnsCount = Math.min(3, Math.max(1, row.length || defaultLanes.length));
+      const lanePositions = columnsCount === 1
+        ? [0]
+        : columnsCount === 2
+          ? [-laneWidth, laneWidth]
+          : defaultLanes;
+      
       row.forEach((cellValue, colIndex) => {
-        const xPos = lanes[colIndex];
+        const xPos = lanePositions[colIndex];
+        if (xPos === undefined) {
+          return;
+        }
         
         if (cellValue === 1) {
           // 1 = Plataforma normal
@@ -87,6 +97,46 @@ export class LevelLoader {
             z: zPos,
             size: [15, 2, blockLength]
           }));
+        } else if (cellValue === 4) {
+          obstacles.push(createObstacle(OBSTACLE_TEMPLATES.SUPPLY_STATION, {
+            x: xPos,
+            y: 0.1,
+            z: zPos,
+            size: [15, 2, blockLength]
+          }, { type: 'SUPPLIES' }));
+          obstacles.push(createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, {
+            x: xPos,
+            y: -1,
+            z: zPos,
+            size: [15, 2, blockLength]
+          }));
+        } else if (cellValue === 5) {
+          obstacles.push(createObstacle(OBSTACLE_TEMPLATES.BOOST_PAD, {
+            x: xPos,
+            y: 0.1,
+            z: zPos,
+            size: [15, 1, blockLength]
+          }, { type: 'BOOST' }));
+          obstacles.push(createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, {
+            x: xPos,
+            y: -1,
+            z: zPos,
+            size: [15, 2, blockLength]
+          }));
+        } else if (cellValue === 6) {
+          obstacles.push(createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, {
+            x: xPos,
+            y: -1,
+            z: zPos,
+            size: [15, 2, blockLength]
+          }, { type: 'STICKY' }));
+        } else if (cellValue === 7) {
+          obstacles.push(createObstacle(OBSTACLE_TEMPLATES.PLATFORM_LARGE, {
+            x: xPos,
+            y: -1,
+            z: zPos,
+            size: [15, 2, blockLength]
+          }, { type: 'SLIPPERY' }));
         }
         // 0 = Hueco (No crear nada)
       });

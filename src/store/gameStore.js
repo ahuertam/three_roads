@@ -2,6 +2,36 @@ import { create } from 'zustand';
 
 import { LEVELS } from '../levels/index.js';
 
+const getPreviewLevel = () => {
+  if (typeof window === 'undefined') return null;
+  const params = new URLSearchParams(window.location.search);
+  const previewKey = params.get('previewKey');
+  if (previewKey) {
+    try {
+      const stored = localStorage.getItem(previewKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.segments) {
+          return { level: parsed, isPreview: true };
+        }
+      }
+    } catch {}
+  }
+  const previewData = params.get('previewLevelData');
+  if (!previewData) return null;
+  try {
+    const parsed = JSON.parse(previewData);
+    if (!parsed || !parsed.segments) return null;
+    return { level: parsed, isPreview: true };
+  } catch {
+    return null;
+  }
+};
+
+const previewLevelInfo = getPreviewLevel();
+const previewLevel = previewLevelInfo?.level ?? null;
+const isPreview = Boolean(previewLevelInfo?.isPreview);
+
 const useGameStore = create((set, get) => ({
   shipPosition: [0, 2, -50], // Subir un poco para asegurar caída limpia sobre la plataforma
   initialZ: -50, // Posición Z inicial para calcular distancia
@@ -23,8 +53,13 @@ const useGameStore = create((set, get) => ({
     }
   })(),
   levelTime: 0, // Tiempo del nivel actual en segundos
-  justLoadedLevel: false, // Flag para evitar condiciones de carrera en el reset
+  justLoadedLevel: previewLevel ? true : false, // Flag para evitar condiciones de carrera en el reset
   resetLevelGeneration: false, // Flag para forzar regeneración de nivel (fix flickering)
+  gameState: previewLevel ? 'playing' : 'menu',
+  levelIndex: 0,
+  currentLevel: previewLevel || LEVELS[0],
+  isPreview,
+  previewPayloadHash: null,
   setShipPosition: (position) => {
     const state = get();
     
@@ -48,16 +83,13 @@ const useGameStore = create((set, get) => ({
       distanceTraveled: Math.floor(distanceFromStart)
     });
   },
-  gameState: 'menu', // 'playing', 'crashed', 'gameOver', 'menu', 'victory', 'levelComplete'
   score: 0,
   lives: 3,
-  levelIndex: 0, // Índice del nivel actual en el array LEVELS
-  currentLevel: LEVELS[0],
   speed: 1,
   gameTime: 0,
   onPlatform: false,
   platformHeight: 0,
-  crashPosition: null, // Posición donde ocurrió la colisión
+  crashPosition: null,
   updateHighScore: (levelId, score) => {
     const state = get();
     const currentHigh = state.highScores[levelId] || 0;
@@ -122,6 +154,21 @@ const useGameStore = create((set, get) => ({
   nextLevel: () => {
     const state = get();
     
+    if (state.isPreview) {
+      set({
+        gameState: 'playing',
+        shipPosition: [0, 2, -50],
+        initialZ: -50,
+        distanceTraveled: 0,
+        crashPosition: null,
+        resetLevelGeneration: true,
+        justLoadedLevel: true,
+        supplies: 100,
+        levelTime: 0
+      });
+      return;
+    }
+    
     // GUARDAR HIGH SCORE DEL NIVEL ACTUAL antes de cambiar
     const currentLevelId = state.currentLevel?.id || 'unknown';
     const currentHigh = state.highScores[currentLevelId] || 0;
@@ -177,9 +224,7 @@ const useGameStore = create((set, get) => ({
     gameState: 'playing', 
     score: 0, 
     lives: 3, 
-    levelIndex: 0,
-    currentLevel: LEVELS[0],
-    speed: 1,
+  speed: 1,
     gameTime: 0,
     levelTime: 0, // Resetear cronómetro del nivel
     shipPosition: [0, 2, -50],
@@ -188,8 +233,38 @@ const useGameStore = create((set, get) => ({
     onPlatform: false,
     platformHeight: 0,
     crashPosition: null,
-    supplies: 100 // Resetear suministros al 100%
+  justLoadedLevel: previewLevel ? true : false,
+  supplies: 100 // Resetear suministros al 100%
   }),
+  
+  setPreviewLevel: (levelData, payloadHash) => {
+    if (!levelData || !levelData.segments) return;
+    const state = get();
+    if (payloadHash && state.previewPayloadHash === payloadHash) {
+      return;
+    }
+    set({
+      gameState: 'playing',
+      score: 0,
+      lives: 3,
+      levelIndex: 0,
+      currentLevel: levelData,
+      speed: 1,
+      gameTime: 0,
+      levelTime: 0,
+      shipPosition: [0, 2, -50],
+      initialZ: -50,
+      distanceTraveled: 0,
+      onPlatform: false,
+      platformHeight: 0,
+      crashPosition: null,
+      justLoadedLevel: true,
+      resetLevelGeneration: true,
+      supplies: 100,
+      isPreview: true,
+      previewPayloadHash: payloadHash || null
+    });
+  },
   
   startLevel: (index) => {
     const i = Math.max(0, Math.min(index ?? 0, LEVELS.length - 1));
