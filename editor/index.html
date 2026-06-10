@@ -3,22 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three Roads - Editor de Niveles</title>
+    <title>Three Roads - Editor de Niveles v2</title>
     <link rel="stylesheet" href="editor.css">
+    <!-- Three.js r0.149.0 (última con OrbitControls como global; aquí usamos cámara custom) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.149.0/three.min.js"></script>
 </head>
 <body>
     <div class="container">
         <!-- Header -->
         <header>
-            <h1>🎮 Three Roads - Editor de Niveles</h1>
-            <p>Diseña niveles visualmente y exporta el código JavaScript</p>
+            <div class="header-left">
+                <h1>🎮 Three Roads - Editor de Niveles</h1>
+                <p>Diseña niveles visualmente y exporta el código JavaScript</p>
+            </div>
+            <div class="header-right">
+                <div class="toolbar">
+                    <button class="btn-tool" id="undoBtn" title="Deshacer (Ctrl+Z)" aria-label="Deshacer">↶</button>
+                    <button class="btn-tool" id="redoBtn" title="Rehacer (Ctrl+Shift+Z)" aria-label="Rehacer">↷</button>
+                </div>
+                <div class="save-indicator" id="saveIndicator">⚪ Iniciando...</div>
+                <button class="btn-tool" id="importBtn" title="Importar nivel existente">📥 Importar</button>
+                <button class="btn-tool danger" id="clearDraftBtn" title="Descartar borrador guardado">🗑 Borrador</button>
+            </div>
         </header>
 
         <!-- Main Content -->
         <div class="main-content">
             <!-- Left Panel: Properties & Tools -->
             <aside class="left-panel">
-                <!-- Level Properties -->
                 <section class="panel">
                     <h2>📋 Propiedades del Nivel</h2>
                     <div class="form-group">
@@ -35,14 +47,14 @@
                             <option value="easy">Fácil</option>
                             <option value="medium" selected>Media</option>
                             <option value="hard">Difícil</option>
+                            <option value="extreme">Extrema</option>
                         </select>
                     </div>
                 </section>
 
-                <!-- Segment Tools -->
                 <section class="panel">
                     <h2>🛠️ Herramientas</h2>
-                    
+
                     <h3>Patrones Predefinidos</h3>
                     <div class="pattern-buttons">
                         <button class="btn-pattern" data-pattern="straight_road">Camino Recto</button>
@@ -60,7 +72,6 @@
                     <button class="btn-primary" id="addCustomSegment">+ Añadir Grid Personalizado</button>
                 </section>
 
-                <!-- Cell Types Legend -->
                 <section class="panel">
                     <h2>🎨 Tipos de Celda</h2>
                     <div class="cell-types">
@@ -74,11 +85,11 @@
                         </div>
                         <div class="cell-type" data-type="2">
                             <div class="cell-preview wall"></div>
-                            <span>2 - Muro</span>
+                            <span>2 - Muro ▲</span>
                         </div>
                         <div class="cell-type" data-type="3">
                             <div class="cell-preview fire"></div>
-                            <span>3 - Fuego</span>
+                            <span>3 - Fuego 🔥</span>
                         </div>
                         <div class="cell-type" data-type="4">
                             <div class="cell-preview supply"></div>
@@ -86,7 +97,7 @@
                         </div>
                         <div class="cell-type" data-type="5">
                             <div class="cell-preview boost"></div>
-                            <span>5 - Impulso</span>
+                            <span>5 - Impulso ⚡</span>
                         </div>
                         <div class="cell-type" data-type="6">
                             <div class="cell-preview sticky"></div>
@@ -101,26 +112,34 @@
                 </section>
             </aside>
 
-            <!-- Center Panel: Segments List & Grid Editor -->
+            <!-- Center Panel: Segments, Metrics & Grid Editor -->
             <main class="center-panel">
-                <!-- Segments List -->
                 <section class="panel">
                     <div class="panel-header">
                         <h2>📦 Segmentos del Nivel</h2>
-                        <span id="segmentCount">0 segmentos</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span id="segmentCount">0 segmentos</span>
+                            <button class="btn-small" id="toggleSegmentsPanel" title="Colapsar/expandir panel" style="margin: 0;">▼</button>
+                        </div>
                     </div>
                     <div id="segmentsList" class="segments-list">
                         <p class="empty-state">No hay segmentos. Añade patrones o grids personalizados.</p>
                     </div>
                 </section>
 
-                <!-- Grid Editor -->
+                <!-- Live Metrics -->
+                <section class="panel">
+                    <h2>📊 Métricas en Vivo</h2>
+                    <div id="metricsPanel" class="metrics-panel"></div>
+                </section>
+
+                <!-- Grid Editor (oculto hasta abrir) -->
                 <section class="panel" id="gridEditorPanel" style="display: none;">
                     <div class="panel-header">
                         <h2>✏️ Editor de Grid</h2>
-                        <button class="btn-close" id="closeGridEditor">✕</button>
+                        <button class="btn-close" id="closeGridEditor" aria-label="Cerrar">✕</button>
                     </div>
-                    
+
                     <div class="grid-controls">
                         <div class="form-group">
                             <label for="segmentName">Nombre del Segmento:</label>
@@ -135,8 +154,9 @@
                             <button class="btn-small" id="removeRow">- Fila</button>
                             <button class="btn-small" id="addColumn">+ Columna</button>
                             <button class="btn-small" id="removeColumn">- Columna</button>
+                            <button class="btn-small" id="toggleCompact">Compacto</button>
                         </div>
-                        <p class="grid-hint">Columnas: 1 a 3 (límites del juego)</p>
+                        <p class="grid-hint">Columnas: 1 a 3 (límites del juego) · Click ▲/🔥/⚡ indica tipo de celda</p>
                     </div>
 
                     <div id="gridCanvas" class="grid-canvas"></div>
@@ -148,33 +168,92 @@
                 </section>
             </main>
 
-            <!-- Right Panel: Export -->
+            <!-- Right Panel: Tabs (3D Preview / Code) -->
             <aside class="right-panel">
-                <section class="panel">
-                    <h2>💾 Exportar Nivel</h2>
-                    <div class="form-group">
-                        <label for="previewBaseUrl">URL del juego:</label>
-                        <input type="text" id="previewBaseUrl" placeholder="http://localhost:3000">
-                    </div>
-                    <button class="btn-export" id="exportLevel">Exportar Código</button>
-                    <button class="btn-preview" id="previewLevel">Probar en el juego</button>
-                    <button class="btn-secondary" id="copyCode">Copiar al Portapapeles</button>
-                    
-                    <h3>Código Generado</h3>
-                    <textarea id="exportedCode" readonly placeholder="El código aparecerá aquí..."></textarea>
-                    
-                    <div class="export-instructions">
-                        <h4>📝 Instrucciones:</h4>
-                        <ol>
-                            <li>Click en "Exportar Código"</li>
-                            <li>Copia el código generado</li>
-                            <li>Crea un archivo <code>levelX.js</code> en <code>src/levels/</code></li>
-                            <li>Pega el código</li>
-                            <li>Importa en <code>src/levels/index.js</code></li>
-                        </ol>
-                    </div>
-                </section>
+                <div class="tab-bar">
+                    <button class="tab-btn active" data-tab="preview">🎮 Vista 3D</button>
+                    <button class="tab-btn" data-tab="code">📄 Código</button>
+                </div>
+
+                <!-- Tab: 3D Preview -->
+                <div class="tab-content active" data-tab-content="preview">
+                    <section class="panel">
+                        <div class="panel-header">
+                            <h2>🎮 Vista 3D</h2>
+                            <span class="hint">Arrastra para rotar · Scroll para zoom</span>
+                        </div>
+                        <div class="camera-toggles">
+                            <button class="btn-small camera-btn active" data-camera="top">Top-down</button>
+                            <button class="btn-small camera-btn" data-camera="perspective">Perspectiva</button>
+                            <button class="btn-small" id="resetCameraBtn" title="Centrar la cámara">⌖ Centrar</button>
+                            <button class="btn-small" id="expand3dBtn" title="Pantalla completa (Esc para salir)">🔲 Expandir</button>
+                        </div>
+                        <div id="preview3d">
+                            <button class="fullscreen-close" id="collapse3dBtn" title="Salir de pantalla completa (Esc)">✕ Cerrar</button>
+                            <canvas id="minimap" title="Mini-mapa: click para centrar la cámara"></canvas>
+                            <div class="minimap-hint">WASD/flechas para mover</div>
+                            <div class="keys-indicator" id="keysIndicator" title="Teclas detectadas">
+                                <span data-key="w" title="Adelante (W/↑)">W</span>
+                                <span data-key="a" title="Izquierda (A/←)">A</span>
+                                <span data-key="s" title="Atrás (S/↓)">S</span>
+                                <span data-key="d" title="Derecha (D/→)">D</span>
+                                <span data-key="q" title="Subir (Q)">Q</span>
+                                <span data-key="e" title="Bajar (E)">E</span>
+                            </div>
+                        </div>
+                        <p class="hint" id="preview3dStatus">Cargando Three.js...</p>
+                    </section>
+                </div>
+
+                <!-- Tab: Code Export -->
+                <div class="tab-content" data-tab-content="code">
+                    <section class="panel">
+                        <h2>💾 Exportar Nivel</h2>
+                        <div class="form-group">
+                            <label for="previewBaseUrl">URL del juego:</label>
+                            <input type="text" id="previewBaseUrl" placeholder="http://localhost:3000">
+                        </div>
+                        <button class="btn-export" id="exportLevel">Exportar Código</button>
+                        <button class="btn-preview" id="previewLevel">🎮 Probar en el juego</button>
+                        <button class="btn-secondary" id="copyCode">Copiar al Portapapeles</button>
+
+                        <h3>Código Generado</h3>
+                        <textarea id="exportedCode" readonly placeholder="El código aparecerá aquí..."></textarea>
+
+                        <div class="export-instructions">
+                            <h4>📝 Instrucciones:</h4>
+                            <ol>
+                                <li>Click en "Exportar Código"</li>
+                                <li>Copia el código generado</li>
+                                <li>Crea un archivo <code>levelX.js</code> en <code>src/levels/</code></li>
+                                <li>Pega el código</li>
+                                <li>Importa en <code>src/levels/index.js</code></li>
+                            </ol>
+                        </div>
+                    </section>
+                </div>
             </aside>
+        </div>
+    </div>
+
+    <!-- Import Modal (oculto por defecto) -->
+    <div class="modal-overlay" id="importModal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>📥 Importar Nivel Existente</h2>
+                <button class="btn-close" id="closeImportModal" aria-label="Cerrar">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="hint">Pega el contenido de un archivo <code>levelN.js</code> o selecciona el archivo:</p>
+                <input type="file" id="importFile" accept=".js" class="btn-secondary">
+                <p class="hint" style="margin-top: 10px;">O pega el código aquí:</p>
+                <textarea id="importTextarea" placeholder="export const LEVEL_X = { id: 'level_X', name: '...', segments: [...] };" rows="15"></textarea>
+                <div id="importError" class="error-message" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancelImport">Cancelar</button>
+                <button class="btn-primary" id="confirmImport">Importar</button>
+            </div>
         </div>
     </div>
 

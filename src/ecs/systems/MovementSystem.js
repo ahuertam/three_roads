@@ -45,7 +45,7 @@ export class MovementSystem {
         // Resetear plataforma
         const platform = entity.getComponent(Platform);
         if (platform) {
-          platform.setOffPlatform();
+          platform.setOnPlatform(0);
         }
         
         // RESETEAR SUMINISTROS AL 100%

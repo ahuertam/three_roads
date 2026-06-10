@@ -1,3 +1,8 @@
+/* ==============================================
+   Three Roads - Editor Styles
+   v2: autosave, undo/redo, métricas, importador, 3D
+   ============================================== */
+
 * {
     margin: 0;
     padding: 0;
@@ -17,37 +22,115 @@ body {
     margin: 0 auto;
 }
 
-/* Header */
+/* ==============================================
+   Header + Toolbar
+   ============================================== */
+
 header {
-    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 30px;
     padding: 20px;
     background: rgba(0, 255, 0, 0.1);
     border: 2px solid #00ff00;
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
-header h1 {
+.header-left h1 {
     color: #00ff00;
-    font-size: 2.5em;
-    margin-bottom: 10px;
+    font-size: 2em;
+    margin-bottom: 5px;
     text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
 }
 
-header p {
+.header-left p {
     color: #aaa;
-    font-size: 1.1em;
+    font-size: 0.95em;
 }
 
-/* Main Layout */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.toolbar {
+    display: flex;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px;
+    border-radius: 6px;
+}
+
+.btn-tool {
+    background: #333;
+    color: #fff;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.btn-tool:hover:not(:disabled) {
+    background: #444;
+    border-color: #00ff00;
+}
+
+.btn-tool:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btn-tool.danger:hover:not(:disabled) {
+    background: #ff4444;
+    border-color: #cc0000;
+}
+
+.save-indicator {
+    padding: 8px 14px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 6px;
+    font-size: 0.85em;
+    color: #aaa;
+    min-width: 150px;
+    text-align: center;
+}
+
+.save-indicator.saving { color: #FFD700; }
+.save-indicator.saved { color: #32CD32; }
+.save-indicator.error { color: #ff4444; }
+
+/* ==============================================
+   Main Layout
+   ============================================== */
+
 .main-content {
     display: grid;
-    grid-template-columns: 300px 1fr 350px;
+    grid-template-columns: 300px 1fr 420px;
     gap: 20px;
 }
 
-/* Panels */
+@media (max-width: 1400px) {
+    .main-content { grid-template-columns: 280px 1fr 380px; }
+}
+
+@media (max-width: 1200px) {
+    .main-content { grid-template-columns: 1fr; }
+    .left-panel, .right-panel, .center-panel { max-width: 700px; margin: 0 auto; }
+}
+
+/* ==============================================
+   Panels
+   ============================================== */
+
 .panel {
     background: rgba(20, 20, 20, 0.9);
     border: 2px solid #444;
@@ -59,7 +142,7 @@ header p {
 
 .panel h2 {
     color: #00ff00;
-    font-size: 1.3em;
+    font-size: 1.2em;
     margin-bottom: 15px;
     padding-bottom: 10px;
     border-bottom: 2px solid #333;
@@ -67,7 +150,7 @@ header p {
 
 .panel h3 {
     color: #87CEEB;
-    font-size: 1em;
+    font-size: 0.95em;
     margin: 15px 0 10px 0;
 }
 
@@ -86,10 +169,13 @@ header p {
 
 .panel-header span {
     color: #888;
-    font-size: 0.9em;
+    font-size: 0.85em;
 }
 
-/* Form Elements */
+/* ==============================================
+   Form Elements
+   ============================================== */
+
 .form-group {
     margin-bottom: 15px;
 }
@@ -98,28 +184,34 @@ header p {
     display: block;
     color: #87CEEB;
     margin-bottom: 5px;
-    font-size: 0.9em;
+    font-size: 0.85em;
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
     width: 100%;
     padding: 8px 12px;
     background: #222;
     border: 2px solid #444;
     border-radius: 5px;
     color: #fff;
-    font-size: 1em;
+    font-size: 0.95em;
+    font-family: inherit;
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
     outline: none;
     border-color: #00ff00;
     box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
 }
 
-/* Buttons */
+/* ==============================================
+   Buttons
+   ============================================== */
+
 button {
     cursor: pointer;
     font-family: inherit;
@@ -134,7 +226,7 @@ button {
     border: none;
     border-radius: 5px;
     font-weight: bold;
-    font-size: 1em;
+    font-size: 0.95em;
 }
 
 .btn-primary:hover {
@@ -160,13 +252,13 @@ button {
 
 .btn-export {
     width: 100%;
-    padding: 15px;
+    padding: 14px;
     background: #32CD32;
     color: #000;
     border: none;
     border-radius: 5px;
     font-weight: bold;
-    font-size: 1.1em;
+    font-size: 1.05em;
     margin-bottom: 10px;
 }
 
@@ -183,7 +275,7 @@ button {
     border: none;
     border-radius: 5px;
     font-weight: bold;
-    font-size: 1em;
+    font-size: 0.95em;
     margin-bottom: 10px;
 }
 
@@ -198,12 +290,11 @@ button {
     border: none;
     border-radius: 5px;
     padding: 5px 15px;
-    font-size: 1.2em;
+    font-size: 1.1em;
+    cursor: pointer;
 }
 
-.btn-close:hover {
-    background: #cc0000;
-}
+.btn-close:hover { background: #cc0000; }
 
 .btn-small {
     padding: 6px 12px;
@@ -211,11 +302,12 @@ button {
     color: #fff;
     border: 1px solid #666;
     border-radius: 4px;
-    font-size: 0.9em;
+    font-size: 0.85em;
     margin-right: 5px;
+    margin-bottom: 5px;
 }
 
-.btn-small:hover {
+.btn-small:hover:not(:disabled) {
     background: #555;
     border-color: #00ff00;
 }
@@ -227,13 +319,37 @@ button {
     cursor: not-allowed;
 }
 
+.btn-small.active {
+    background: #00ff00;
+    color: #000;
+    border-color: #00ff00;
+}
+
 .grid-hint {
     margin-top: 8px;
     color: #888;
-    font-size: 0.85em;
+    font-size: 0.8em;
 }
 
-/* Pattern Buttons */
+.hint {
+    color: #888;
+    font-size: 0.8em;
+    margin-top: 8px;
+    font-style: italic;
+}
+
+.hint code {
+    background: #222;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #00ff00;
+    font-style: normal;
+}
+
+/* ==============================================
+   Pattern Buttons
+   ============================================== */
+
 .pattern-buttons {
     display: grid;
     grid-template-columns: 1fr;
@@ -247,7 +363,7 @@ button {
     border: 2px solid #444;
     border-radius: 5px;
     text-align: left;
-    font-size: 0.9em;
+    font-size: 0.88em;
 }
 
 .btn-pattern:hover {
@@ -255,11 +371,14 @@ button {
     border-color: #00ff00;
 }
 
-/* Cell Types */
+/* ==============================================
+   Cell Types
+   ============================================== */
+
 .cell-types {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 8px;
+    gap: 6px;
 }
 
 .cell-type {
@@ -285,10 +404,11 @@ button {
 }
 
 .cell-preview {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     border-radius: 4px;
     border: 2px solid #555;
+    flex-shrink: 0;
 }
 
 .cell-preview.empty { background: #111; }
@@ -300,23 +420,25 @@ button {
 .cell-preview.sticky { background: #90EE90; }
 .cell-preview.slippery { background: #FFA500; }
 
-.hint {
-    color: #888;
-    font-size: 0.85em;
-    margin-top: 10px;
-    font-style: italic;
-}
+/* ==============================================
+   Segments List
+   ============================================== */
 
-/* Segments List */
 .segments-list {
     max-height: 400px;
     overflow-y: auto;
+    transition: max-height 0.3s ease;
+}
+
+.segments-list.collapsed {
+    max-height: 0;
+    overflow: hidden;
 }
 
 .empty-state {
     color: #666;
     text-align: center;
-    padding: 40px 20px;
+    padding: 30px 20px;
     font-style: italic;
 }
 
@@ -324,68 +446,89 @@ button {
     background: #222;
     border: 2px solid #444;
     border-radius: 5px;
-    padding: 12px;
-    margin-bottom: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    transition: border-color 0.2s;
+}
+
+.segment-item:hover { border-color: #666; }
+.segment-item.grid-segment { border-left: 4px solid #87CEEB; }
+.segment-item.pattern-segment { border-left: 4px solid #00ff00; }
+.segment-item.inline-segment { border-left: 4px solid #FFD700; }
+
+.segment-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 8px;
 }
 
-.segment-item:hover {
-    border-color: #666;
-}
-
-.segment-info {
-    flex: 1;
-}
-
+.segment-info { flex: 1; min-width: 0; }
 .segment-info strong {
     color: #00ff00;
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
+    font-size: 0.95em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
-
 .segment-info small {
     color: #888;
+    font-size: 0.82em;
 }
 
-.segment-actions {
-    display: flex;
-    gap: 5px;
-}
+.segment-actions { display: flex; gap: 3px; flex-shrink: 0; }
 
 .btn-icon {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     padding: 0;
     background: #333;
     color: #fff;
     border: 1px solid #555;
     border-radius: 4px;
-    font-size: 1em;
+    font-size: 0.9em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.btn-icon:hover {
-    background: #444;
+.btn-icon:hover { background: #444; }
+.btn-icon.delete { background: #ff4444; border-color: #cc0000; }
+.btn-icon.delete:hover { background: #cc0000; }
+
+/* Mini-preview visual (mini-grid o dot pattern) */
+.segment-preview {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 6px;
+    background: #1a1a1a;
+    border-radius: 4px;
+    border: 1px solid #333;
 }
 
-.btn-icon.delete {
-    background: #ff4444;
-    border-color: #cc0000;
+.segment-preview .preview-cell {
+    width: 8px;
+    height: 8px;
+    border-radius: 1px;
+    border: 1px solid #2a2a2a;
 }
 
-.btn-icon.delete:hover {
-    background: #cc0000;
+.segment-preview .preview-row {
+    display: flex;
+    gap: 2px;
 }
 
-/* Grid Editor */
-.grid-controls {
-    margin-bottom: 20px;
-}
+/* ==============================================
+   Grid Editor
+   ============================================== */
 
-.grid-size-controls {
-    margin-top: 10px;
-}
+.grid-controls { margin-bottom: 20px; }
+.grid-size-controls { margin-top: 10px; }
 
 .grid-canvas {
     display: inline-block;
@@ -394,12 +537,18 @@ button {
     border-radius: 5px;
     border: 2px solid #333;
     margin: 20px 0;
+    transition: all 0.2s ease;
 }
+
+.grid-canvas.compact { padding: 10px; }
 
 .grid-row {
     display: flex;
     gap: 2px;
+    margin-bottom: 2px;
 }
+
+.grid-canvas.compact .grid-row { gap: 1px; margin-bottom: 1px; }
 
 .grid-cell {
     width: 40px;
@@ -407,14 +556,21 @@ button {
     border: 1px solid #444;
     border-radius: 3px;
     cursor: pointer;
-    transition: all 0.1s ease;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    position: relative;
 }
+
+.grid-canvas.compact .grid-cell { width: 24px; height: 24px; }
 
 .grid-cell:hover {
     transform: scale(1.1);
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    z-index: 1;
 }
 
+.grid-canvas.compact .grid-cell:hover { transform: scale(1.15); }
+
+/* Colores por tipo */
 .grid-cell[data-value="0"] { background: #111; }
 .grid-cell[data-value="1"] { background: #666666; }
 .grid-cell[data-value="2"] { background: #444; }
@@ -424,25 +580,304 @@ button {
 .grid-cell[data-value="6"] { background: #90EE90; }
 .grid-cell[data-value="7"] { background: #FFA500; }
 
+/* Indicador Y (A4) — muro elevado */
+.grid-cell[data-value="2"]::after {
+    content: '▲';
+    position: absolute;
+    top: 1px;
+    right: 3px;
+    color: #FFD700;
+    font-size: 10px;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+}
+
+/* Indicador de fuego */
+.grid-cell[data-value="3"]::after {
+    content: '🔥';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 16px;
+    pointer-events: none;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8));
+}
+
+.grid-canvas.compact .grid-cell[data-value="3"]::after { font-size: 11px; }
+
+/* Indicador de boost */
+.grid-cell[data-value="5"]::after {
+    content: '⚡';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 16px;
+    pointer-events: none;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8));
+}
+
+.grid-canvas.compact .grid-cell[data-value="5"]::after { font-size: 11px; }
+
 .grid-actions {
     display: flex;
     gap: 10px;
 }
 
-.grid-actions button {
-    flex: 1;
+.grid-actions button { flex: 1; }
+
+/* ==============================================
+   Live Metrics (A3)
+   ============================================== */
+
+.metrics-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 20px;
 }
 
-/* Export */
+.metric-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.metric-label {
+    color: #87CEEB;
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metric-value {
+    color: #fff;
+    font-size: 1.4em;
+    font-weight: bold;
+}
+
+.metric-value.easy { color: #32CD32; }
+.metric-value.medium { color: #FFD700; }
+.metric-value.hard { color: #FF6347; }
+.metric-value.extreme { color: #ff00ff; }
+
+.metric-bar {
+    width: 100%;
+    height: 8px;
+    background: #222;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 2px;
+}
+
+.metric-bar-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+    background: #87CEEB;
+}
+
+/* ==============================================
+   Tabs (panel derecho)
+   ============================================== */
+
+.tab-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 4px;
+    border-radius: 6px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 8px 12px;
+    background: transparent;
+    color: #aaa;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    color: #fff;
+    background: #333;
+}
+
+.tab-btn.active {
+    color: #000;
+    background: #00ff00;
+    border-color: #00ff00;
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ==============================================
+   3D Preview
+   ============================================== */
+
+#preview3d {
+    width: 100%;
+    height: 500px;
+    background: #0a0a15;
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+    border: 2px solid #333;
+    transition: all 0.2s ease;
+}
+
+#preview3d.fullscreen {
+    position: fixed;
+    inset: 20px;
+    height: auto !important;
+    z-index: 20000;
+    box-shadow: 0 0 40px rgba(0, 255, 0, 0.5);
+    border-color: #00ff00;
+}
+
+#preview3d > canvas:not(#minimap) {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+#preview3d:empty::before {
+    content: 'Cargando Three.js...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #555;
+    font-style: italic;
+}
+
+.fullscreen-close {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    padding: 8px 16px;
+    background: rgba(255, 68, 68, 0.9);
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.fullscreen-close:hover {
+    background: #cc0000;
+}
+
+#preview3d.fullscreen .fullscreen-close {
+    display: block;
+}
+
+/* Mini-mapa */
+#minimap {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 160px;
+    height: 160px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid #00ff00;
+    border-radius: 5px;
+    z-index: 5;
+    cursor: crosshair;
+    image-rendering: pixelated;
+}
+
+.minimap-hint {
+    position: absolute;
+    bottom: 8px;
+    left: 10px;
+    font-size: 0.7em;
+    color: #aaa;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 2px 6px;
+    border-radius: 3px;
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* Indicador de teclas activas */
+.keys-indicator {
+    position: absolute;
+    bottom: 8px;
+    right: 10px;
+    display: flex;
+    gap: 3px;
+    z-index: 5;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 5px 8px;
+    border-radius: 5px;
+    border: 1px solid #444;
+    pointer-events: none;
+}
+
+.keys-indicator span {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #222;
+    border: 1px solid #555;
+    border-radius: 3px;
+    color: #777;
+    font-size: 11px;
+    font-weight: bold;
+    transition: all 0.05s ease;
+    font-family: monospace;
+}
+
+.keys-indicator span.active {
+    background: #00ff00;
+    color: #000;
+    border-color: #00ff00;
+    box-shadow: 0 0 8px rgba(0, 255, 0, 0.6);
+    transform: scale(1.1);
+}
+
+.camera-toggles {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.camera-toggles .btn-small {
+    flex: 1;
+    margin-right: 0;
+    min-width: 80px;
+}
+
+#preview3dStatus {
+    margin-top: 8px;
+    text-align: center;
+}
+
+/* ==============================================
+   Export Code
+   ============================================== */
+
 #exportedCode {
     width: 100%;
-    height: 400px;
+    height: 300px;
     background: #1a1a1a;
     border: 2px solid #333;
     border-radius: 5px;
     color: #00ff00;
     font-family: 'Courier New', monospace;
-    font-size: 0.9em;
+    font-size: 0.85em;
     padding: 15px;
     resize: vertical;
     margin-top: 10px;
@@ -477,42 +912,108 @@ button {
     padding: 2px 6px;
     border-radius: 3px;
     color: #00ff00;
+}
+
+/* ==============================================
+   Import Modal
+   ============================================== */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    padding: 20px;
+}
+
+.modal {
+    background: #1a1a1a;
+    border: 2px solid #00ff00;
+    border-radius: 10px;
+    max-width: 700px;
+    width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #333;
+}
+
+.modal-header h2 {
+    color: #00ff00;
+    font-size: 1.2em;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-body textarea {
+    width: 100%;
+    background: #0a0a0a;
+    border: 2px solid #333;
+    border-radius: 5px;
+    color: #87CEEB;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+    padding: 12px;
+    resize: vertical;
+    margin-top: 5px;
+}
+
+.modal-body textarea:focus {
+    outline: none;
+    border-color: #00ff00;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #333;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.modal-footer button {
+    width: auto;
+    padding: 10px 20px;
+    margin: 0;
+}
+
+.error-message {
+    background: rgba(255, 68, 68, 0.2);
+    border: 1px solid #ff4444;
+    border-radius: 5px;
+    padding: 10px;
+    color: #ff6666;
+    margin-top: 10px;
+    font-size: 0.9em;
     font-family: 'Courier New', monospace;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-    width: 10px;
-}
+/* ==============================================
+   Scrollbar
+   ============================================== */
 
-::-webkit-scrollbar-track {
-    background: #1a1a1a;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #444;
-    border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}
-
-/* Responsive */
-@media (max-width: 1400px) {
-    .main-content {
-        grid-template-columns: 280px 1fr 320px;
-    }
-}
-
-@media (max-width: 1200px) {
-    .main-content {
-        grid-template-columns: 1fr;
-    }
-    
-    .left-panel,
-    .right-panel {
-        max-width: 600px;
-        margin: 0 auto;
-    }
-}
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #1a1a1a; }
+::-webkit-scrollbar-thumb { background: #444; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #555; }
