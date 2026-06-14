@@ -1,6 +1,7 @@
 import { Transform } from '../components/Transform.js';
 import { Collision } from '../components/Collision.js';
 import { Physics } from '../components/Physics.js';
+import { Platform } from '../components/Platform.js';
 import {
   PLATFORM_TYPES,
   PATTERN_LIBRARY,
@@ -91,30 +92,50 @@ export class ObstacleSpawnSystem {
     this.processedSegments = levelLoader.parseLevel(levelData);
     this.isLevelComplete = false;
     this.goalSpawned = false;
-    
+
     // Limpiar obstáculos antiguos
     this.ecsManager.getEntitiesWithTag('obstacle').forEach(obs => obs.destroy());
-    
+
     // Spawnear plataforma inicial para el nuevo nivel
     this.spawnInitialPlatform();
-    
-    if (this.gameStore.getState().isPreview) {
-      const playerEntities = this.ecsManager.getEntitiesWithTag('player');
-      if (playerEntities.length > 0) {
-        const player = playerEntities[0];
-        const transform = player.getComponent(Transform);
-        if (transform) {
-          transform.position = [0, 2, -50];
-        }
-        const physics = player.getComponent(Physics);
-        if (physics) {
-          physics.velocity.x = 0;
-          physics.velocity.y = 0;
-          physics.velocity.z = 0;
-          physics.isGrounded = false;
-          physics.bounceVelocity = 0;
-          physics.bounceCount = 0;
-        }
+
+    // Resetear posición, velocidad y estado de plataforma del jugador.
+    //
+    // CRÍTICO para continueAfterCrash: esa función pone
+    // resetLevelGeneration=true pero NO cambia levelIndex, por lo que el
+    // reseteo de posición en MovementSystem (que solo dispara con cambio
+    // de levelIndex) no se activa. Sin este reset aquí, la nave reaparece
+    // en Y=-30 (donde murió) y el chequeo de caída al vacío del siguiente
+    // frame la mata otra vez → bucle de muerte que solo se rompe con F5.
+    //
+    // Antes este reset solo se aplicaba dentro de `if (isPreview)`, lo que
+    // dejaba sin resetear el camino normal (continueAfterCrash, startLevel
+    // cuando levelIndex no cambia, nextLevel en algunos casos).
+    const playerEntities = this.ecsManager.getEntitiesWithTag('player');
+    if (playerEntities.length > 0) {
+      const player = playerEntities[0];
+      const transform = player.getComponent(Transform);
+      if (transform) {
+        transform.position = [0, 2, -50];
+      }
+      const physics = player.getComponent(Physics);
+      if (physics) {
+        physics.velocity.x = 0;
+        physics.velocity.y = 0;
+        physics.velocity.z = 0;
+        physics.isGrounded = false;
+        physics.bounceVelocity = 0;
+        physics.bounceCount = 0;
+      }
+      const platform = player.getComponent(Platform);
+      if (platform) {
+        // Importante: usar setOffPlatform() (no setOnPlatform(0)). Si lo
+        // marcamos como "en plataforma" con la nave en Y=2, la lógica de
+        // flotación no la mueve y la gravedad queda deshabilitada → la
+        // nave queda congelada en el aire. Con setOffPlatform() la nave
+        // cae naturalmente y CollisionSystem la detecta en el siguiente
+        // frame.
+        platform.setOffPlatform();
       }
     }
   }

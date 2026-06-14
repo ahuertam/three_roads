@@ -16,7 +16,7 @@ export class MovementSystem {
   }
   
   update(delta) {
-    const { levelIndex, shipPosition } = this.gameStore.getState();
+    const { levelIndex, shipPosition, resetLevelGeneration } = this.gameStore.getState();
 
     // Detectar cambio de nivel y resetear física
     const physicsEntities = this.ecsManager.getEntitiesWithComponents([Transform, Physics]);
@@ -63,6 +63,36 @@ export class MovementSystem {
         }
       });
       return; // Saltar este frame para evitar movimientos erráticos
+    }
+
+    // Respawn tras muerte (continueAfterCrash pone resetLevelGeneration=true
+    // pero NO cambia levelIndex). Hay que resetear la posición/física AQUÍ
+    // (no en ObstacleSpawnSystem.loadLevel) porque MovementSystem corre
+    // ANTES que ObstacleSpawnSystem. Si no reseteamos aquí, el death check
+    // de este frame mata a la nave otra vez con gameState='playing' y deja
+    // gameState='crashed' ANTES de que ObstacleSpawnSystem pueda llamar a
+    // loadLevel → bucle de muerte.
+    if (resetLevelGeneration) {
+      physicsEntities.forEach(entity => {
+        const transform = entity.getComponent(Transform);
+        const physics = entity.getComponent(Physics);
+        const platform = entity.getComponent(Platform);
+
+        if (transform) transform.position = [...shipPosition];
+        if (physics) {
+          physics.velocity = { x: 0, y: 0, z: 0 };
+          physics.isGrounded = false;
+          physics.bounceVelocity = 0;
+          physics.bounceCount = 0;
+        }
+        if (platform) {
+          // setOffPlatform (no setOnPlatform(0)): dejar que la nave caiga
+          // naturalmente de Y=2 a Y=0.8. CollisionSystem la detecta en el
+          // siguiente frame y aplica el float.
+          platform.setOffPlatform();
+        }
+      });
+      return; // Saltar el resto del frame; ObstacleSpawnSystem consumirá el flag
     }
 
     const entities = this.ecsManager.getEntitiesWithComponents([Transform, Physics, Input]);
