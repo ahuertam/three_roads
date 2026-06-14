@@ -42,7 +42,12 @@ export class MovementSystem {
         
         console.log('Entity reset to:', transform.position);
         
-        // Resetear plataforma
+        // Resetear plataforma: marcar como EN plataforma (altura 0) en lugar
+        // de fuera, para evitar que la gravedad tire de la nave al vacío en
+        // el frame siguiente al reset, antes de que CollisionSystem tenga
+        // oportunidad de re-detectar la plataforma inicial.
+        // La plataforma inicial está en y=-1 con altura 2 → maxY=0, así que
+        // height=0 es el valor correcto que CollisionSystem asignará.
         const platform = entity.getComponent(Platform);
         if (platform) {
           platform.setOnPlatform(0);
@@ -139,6 +144,13 @@ export class MovementSystem {
       }
       physics.velocity.x *= frictionRate;
     }
+
+    // Sticky: reducción extra de velocidad (lateral Y forward) que el
+    // `lateralMultiplier` de arriba no cubre. Se aplica aquí (antes de
+    // updatePosition) para que la nave se frene de verdad este frame.
+    if (isSticky) {
+      physics.velocity.x *= 0.1;
+    }
     
     // Movimiento hacia adelante con consumo de suministros escalado por velocidad
     if (input.keys.forward) {
@@ -169,6 +181,17 @@ export class MovementSystem {
     }
     
     physics.velocity.z = -this.baseSpeed;
+
+    // Efectos de plataforma sobre la velocidad hacia adelante. Se aplican
+    // aquí (antes de updatePosition) para que tengan efecto real sobre
+    // el movimiento de la nave.
+    if (isSticky) {
+      physics.velocity.z *= 0.5;
+    }
+    if (platformEffect.isEffectActive('boost')) {
+      physics.velocity.z *= 1.5;
+    }
+
     // En el método handleInput, donde está el salto:
     if (input.keys.jump && (physics.isGrounded || platform?.isOnPlatform)) {
       let jumpMultiplier = 1;
