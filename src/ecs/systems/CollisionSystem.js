@@ -15,11 +15,11 @@ export class CollisionSystem {
     this.platformDetectionRange = 2.0; // Aumentado de 1.5 a 2.0
   }
   
-  update() {
+  update(delta) {
     const { gameState } = this.gameStore.getState();
-    
+
     if (gameState !== 'playing') return;
-    
+
     const shipEntities = this.ecsManager.getEntitiesWithTag('player');
     const obstacleEntities = this.ecsManager.getEntitiesWithTag('obstacle');
     
@@ -68,7 +68,15 @@ export class CollisionSystem {
         if (isHorizontallyOver) {
           const distanceToTop = shipTransform.position[1] - obstacleBox.maxY;
           const distanceToBottom = obstacleBox.minY - shipTransform.position[1];
-          
+
+          // BURNING: muerte instantánea por cualquier overlap 3D.
+          // No requiere estar cayendo ni cerca de la superficie: si la
+          // bounding box de la nave solapa con la del obstáculo, muere.
+          if (obstacle.platformType === 'BURNING' && this.checkFullIntersection(shipBox, obstacleBox)) {
+            this.handleBurningDamage(ship);
+            return;
+          }
+
           // DETECCIÓN MEJORADA DE PLATAFORMA
           if (distanceToTop >= -1.0 && distanceToTop <= this.platformDetectionRange) { // Cambiado de -0.5 a -1.0
             // Verificar que la nave esté cayendo o cerca de la superficie
@@ -115,8 +123,9 @@ export class CollisionSystem {
         }
       }
       
-      // Actualizar efectos
-      shipEffects.update(1/60); // Asumiendo 60 FPS
+      // Actualizar efectos (usar delta real para que la duración de
+      // boost/sticky/slippery sea correcta a cualquier frame rate)
+      shipEffects.update(delta);
       
       // Aplicar efectos activos a la física
       this.applyActiveEffects(shipPhysics, shipEffects);
@@ -162,30 +171,21 @@ export class CollisionSystem {
   }
   
   applyActiveEffects(shipPhysics, shipEffects) {
-    // Boost: aumenta velocidad
-    if (shipEffects.isEffectActive('boost')) {
-      shipPhysics.velocity.z *= 1.5;
-    }
-    
-    // Sticky: DETIENE la nave completamente
-    if (shipEffects.isEffectActive('sticky')) {
-      // Reducir velocidad lateral drásticamente hasta casi detenerla
-      shipPhysics.velocity.x *= 0.1; // Reducción extrema
-      // También reducir velocidad hacia adelante
-      shipPhysics.velocity.z *= 0.5; // Frena la nave
-    }
-    
-    // Slippery: fricción casi nula para deslizamiento extremo
-    if (shipEffects.isEffectActive('slippery')) {
-      shipPhysics.friction = 0.995; // Casi sin fricción
-      // No limitar la velocidad lateral - dejar que se deslice libremente
-    } else {
-      shipPhysics.friction = 0.85; // Valor normal
-    }
-    
-    // Burning: daño continuo
-    if (shipEffects.isEffectActive('burning')) {
-      // El daño se maneja en handleBurningDamage
+    // Los efectos de plataforma (boost, sticky, slippery) se aplican en
+    // MovementSystem.handleInput, ANTES de updatePosition. Si se aplicaran
+    // aquí (después de updatePosition), se sobrescribirían al siguiente
+    // frame sin haber afectado al movimiento de la nave.
+    //
+    // - boost:    velocity.z *= 1.5        → MovementSystem
+    // - sticky:   velocity.x *= 0.1, velocity.z *= 0.5 → MovementSystem
+    // - slippery: frictionRate local (0.995) → MovementSystem
+    //
+    // El campo `physics.friction` se conserva por compatibilidad con código
+    // externo, pero no se usa en el bucle de input.
+    if (!shipEffects.isEffectActive('slippery') && shipPhysics.friction !== 0.85) {
+      shipPhysics.friction = 0.85;
+    } else if (shipEffects.isEffectActive('slippery') && shipPhysics.friction !== 0.995) {
+      shipPhysics.friction = 0.995;
     }
   }
   

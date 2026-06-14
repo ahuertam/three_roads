@@ -24,14 +24,16 @@ function CrashOverlay() {
       const handleKeyPress = (event) => {
         if (event.code === 'Space' && showMessage) {
           event.preventDefault();
-          
+
           // Esperar 1 segundo antes de continuar
           setTimeout(() => {
             if (gameState === 'gameOver' || gameState === 'victory') {
               restartGame();
             } else {
+              // continueAfterCrash() ya resetea posición, suministros,
+              // resetLevelGeneration y justLoadedLevel. NO hace falta
+              // recargar la página: el respawn limpio funciona.
               continueAfterCrash();
-              restartGame(); // Refresca la página
             }
           }, 1000);
         }

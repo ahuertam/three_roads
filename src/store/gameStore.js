@@ -284,7 +284,9 @@ const useGameStore = create((set, get) => ({
       platformHeight: 0,
       crashPosition: null,
       justLoadedLevel: true,
-      supplies: 100 // Resetear suministros al 100%
+      resetLevelGeneration: true, // Forzar regeneración de obstáculos (consistente con continueAfterCrash, nextLevel, setPreviewLevel)
+      supplies: 100, // Resetear suministros al 100%
+      isPreview: false // Si veníamos de un preview del editor, dejar modo normal
     });
   },
   
