@@ -48,13 +48,25 @@ export class GameManager {
   
   update(delta) {
     if (!this.isRunning) return;
-    
+
     // Acceder al estado actual y acciones
     const state = this.gameStore.getState();
     state.updateGameTime(delta);
-    
+
     this.ecsManager.update(delta);
-    
+
+    // DEBUG: diagnosticar por qué setShipPosition no se llama
+    if (!this._dbgShip) this._dbgShip = 0;
+    this._dbgShip++;
+    if (this._dbgShip % 60 === 0) {
+      console.log('[GM.update]', {
+        hasShip: !!this.shipEntity,
+        shipId: this.shipEntity?.id,
+        hasTransform: this.shipEntity ? !!this.shipEntity.getComponent('Transform') : false,
+        ecsEntityCount: this.ecsManager.entities.size
+      });
+    }
+
     if (this.shipEntity) {
       const transform = this.shipEntity.getComponent('Transform');
       if (transform) {
