@@ -5,6 +5,7 @@ import { CollisionSystem } from './systems/CollisionSystem.js';
 import { ObstacleSpawnSystem } from './systems/ObstacleSpawnSystem.js';
 import { ParticleSystem } from './systems/ParticleSystem.js';
 import { EntityFactory } from './entities/EntityFactory.js';
+import { Transform } from './components/Transform.js';
 import { audioSystem } from './systems/AudioSystem.js';
 
 export class GameManager {
@@ -55,20 +56,15 @@ export class GameManager {
 
     this.ecsManager.update(delta);
 
-    // DEBUG: diagnosticar por qué setShipPosition no se llama
-    if (!this._dbgShip) this._dbgShip = 0;
-    this._dbgShip++;
-    if (this._dbgShip % 60 === 0) {
-      console.log('[GM.update]', {
-        hasShip: !!this.shipEntity,
-        shipId: this.shipEntity?.id,
-        hasTransform: this.shipEntity ? !!this.shipEntity.getComponent('Transform') : false,
-        ecsEntityCount: this.ecsManager.entities.size
-      });
-    }
-
     if (this.shipEntity) {
-      const transform = this.shipEntity.getComponent('Transform');
+      // FIX: pasar la clase Transform (no el string 'Transform').
+      // En producción el minifier renombra las clases, así que
+      // `Transform.name` deja de ser 'Transform'. Usar la clase
+      // garantiza que getComponent busca con el nombre correcto.
+      // Antes: this.shipEntity.getComponent('Transform') → no encontraba
+      //        el componente en producción → setShipPosition nunca corría
+      //        → distanceTraveled quedaba en 0 → metros no subían.
+      const transform = this.shipEntity.getComponent(Transform);
       if (transform) {
         state.setShipPosition(transform.position);
       }

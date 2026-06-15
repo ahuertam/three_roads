@@ -63,20 +63,6 @@ const useGameStore = create((set, get) => ({
   setShipPosition: (position) => {
     const state = get();
 
-    // DEBUG contador
-    if (!this._dbgCount) this._dbgCount = 0;
-    this._dbgCount++;
-    if (this._dbgCount % 30 === 0) { // log cada 30 frames (~0.5s a 60fps)
-      console.log('[METROS]', {
-        n: this._dbgCount,
-        posZ: position[2]?.toFixed(2),
-        initialZ: state.initialZ,
-        dist: Math.abs((position[2] ?? 0) - state.initialZ).toFixed(2),
-        gameState: state.gameState,
-        justLoaded: state.justLoadedLevel
-      });
-    }
-
     // Si acabamos de cargar nivel, ignorar la primera actualización de posición
     // que viene del frame anterior para evitar que la nave vuelva a la posición vieja
     if (state.justLoadedLevel) {
