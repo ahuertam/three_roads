@@ -62,7 +62,7 @@ const useGameStore = create((set, get) => ({
   previewPayloadHash: null,
   setShipPosition: (position) => {
     const state = get();
-    
+
     // Si acabamos de cargar nivel, ignorar la primera actualización de posición
     // que viene del frame anterior para evitar que la nave vuelva a la posición vieja
     if (state.justLoadedLevel) {
@@ -70,15 +70,18 @@ const useGameStore = create((set, get) => ({
       set({ justLoadedLevel: false });
       return;
     }
-    
+
     // Solo actualizar posición y distancia si el juego está en estado 'playing'
     if (state.gameState !== 'playing') {
       return;
     }
-    
-    // Calcular distancia recorrida basada en movimiento en Z
+
+    // DEBUG: confirmar valores
     const distanceFromStart = Math.abs(position[2] - state.initialZ);
-    set({ 
+    if (Math.random() < 0.01) { // loguear 1% de los frames
+      console.log('[METROS]', { posZ: position[2], initialZ: state.initialZ, dist: distanceFromStart, gameState: state.gameState });
+    }
+    set({
       shipPosition: position,
       distanceTraveled: Math.floor(distanceFromStart)
     });
