@@ -36,7 +36,7 @@ Take command of your ship using the keyboard:
 
 1.  **Clone the repository:**
     ```bash
-    git clone <repository-url>
+    git clone https://github.com/ahuertam/three_roads.git
     cd three_roads
     ```
 
